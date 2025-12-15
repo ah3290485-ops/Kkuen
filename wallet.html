@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>محفظتي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      padding: 20px;
+      padding-bottom: 90px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .label {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-bottom: 6px;
+    }
+
+    .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: gold;
+      margin-bottom: 10px;
+    }
+
+    .sub {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .btn-deposit {
+      background: gold;
+      color: black;
+    }
+
+    .btn-withdraw {
+      background: #334155;
+      color: white;
+    }
+
+    /* Bottom menu */
+    .menu {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #020617;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid #1e293b;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .menu a span {
+      display: block;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>💼 محفظتي</h1>
+
+    <!-- الرصيد -->
+    <div class="card">
+      <div class="label">رصيدك الحالي (نقاط)</div>
+      <div class="value" id="points">0</div>
+      <div class="sub">1 نقطة = 1 دولار</div>
+    </div>
+
+    <!-- إيداع -->
+    <div class="card">
+      <h3>➕ شحن الرصيد</h3>
+      <div class="sub">اختر مبلغ الشحن (USDT)</div>
+
+      <button class="btn-deposit">10 USDT</button>
+      <button class="btn-deposit">50 USDT</button>
+      <button class="btn-deposit">100 USDT</button>
+
+      <div class="sub">
+        سيتم تفعيل الشحن لاحقاً
+      </div>
+    </div>
+
+    <!-- سحب -->
+    <div class="card">
+      <h3>➖ سحب الرصيد</h3>
+
+      <input type="number" placeholder="عدد النقاط المراد سحبها">
+      <input type="text" placeholder="عنوان المحفظة (USDT)">
+
+      <button class="btn-withdraw">
+        طلب سحب
+      </button>
+
+      <div class="sub">
+        السحب يتم يدوياً خلال 24 ساعة
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="menu">
+    <a href="dashboard.html">
+      <span>🏠</span>
+      الرئيسية
+    </a>
+
+    <a href="wallet.html">
+      <span>💼</span>
+      محفظتي
+    </a>
+
+    <a href="ads.html">
+      <span>🎬</span>
+      الإعلانات
+    </a>
+
+    <a href="account.html">
+      <span>👤</span>
+      حسابي
+    </a>
+  </div>
+
+  <script>
+    async function loadWallet() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("user_id", user.id)
+        .single();
+
+      if (data) {
+        document.getElementById("points").innerText = data.points;
+      }
+    }
+
+    loadWallet();
+  </script>
+
+</body>
+</html>
