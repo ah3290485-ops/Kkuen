@@ -1,90 +1,92 @@
 
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة التحكم</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#020617,#0f172a);
+  font-family:Tahoma, Arial;
+  background:#020617;
   color:white;
 }
+
 .container{
-  padding:20px;
-  padding-bottom:120px;
   max-width:420px;
   margin:auto;
+  padding:20px;
+  padding-bottom:120px;
 }
+
 h1{
-  color:gold;
-  margin-bottom:5px;
+  text-align:center;
+  color:#facc15;
 }
-#userEmail{
-  opacity:.7;
-  margin-bottom:15px;
-}
-.card{
+
+.balance{
   background:#020617;
+  border:1px solid #1e293b;
   border-radius:14px;
   padding:20px;
   text-align:center;
-  box-shadow:0 0 15px rgba(0,0,0,.6);
+  margin-bottom:20px;
 }
-.balance{
-  font-size:38px;
-  color:#facc15;
-  margin:15px 0;
+
+.balance .num{
+  font-size:28px;
+  font-weight:bold;
+  margin-top:10px;
 }
+
+.card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+}
+
 button{
   width:100%;
   padding:14px;
-  margin:8px 0;
   border:none;
   border-radius:10px;
-  font-size:16px;
+  font-size:18px;
   cursor:pointer;
 }
+
 .btn-gold{
   background:#facc15;
   color:black;
   font-weight:bold;
 }
-.btn-dark{
-  background:#1e293b;
-  color:white;
-}
-button:disabled{opacity:.6}
 
-#timer{
-  margin:10px 0;
-  font-size:18px;
-}
-
-/* bottom menu */
 .menu{
   position:fixed;
   bottom:0;
   left:0;
-  width:100%;
+  right:0;
   background:#020617;
   display:flex;
   justify-content:space-around;
   padding:10px 0;
   border-top:1px solid #1e293b;
 }
+
 .menu a{
   color:white;
   text-decoration:none;
-  font-size:13px;
+  font-size:14px;
   text-align:center;
 }
+
 .menu a span{
   display:block;
   font-size:22px;
@@ -95,106 +97,61 @@ button:disabled{opacity:.6}
 <body>
 
 <div class="container">
-  <h1>BTCUENE</h1>
-  <div id="userEmail"></div>
+
+  <h1>🏠 لوحة التحكم</h1>
+
+  <div class="balance">
+    رصيدك الحالي
+    <div class="num"><span id="points">0</span> نقطة</div>
+  </div>
 
   <div class="card">
-    <div>رصيدك الحالي (نقاط)</div>
-    <div class="balance" id="points">0</div>
-
-    <button class="btn-gold" id="watchAdBtn">
-      🎬 مشاهدة إعلان (+1 نقطة)
+    <button class="btn-gold" onclick="watchAd()">
+      🎬 مشاهدة إعلان وكسب نقاط
     </button>
-
-    <div id="timer"></div>
-
-    <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
   </div>
+
 </div>
 
-<!-- القائمة السفلية -->
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
   <a href="ads.html"><span>🎬</span>إعلانات</a>
   <a href="wallet.html"><span>💼</span>محفظتي</a>
-  <a href="transactions.html"><span>📜</span>السجل</a>
   <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
 <script>
-let watching=false;
-
-/* تحميل بيانات المستخدم */
-async function loadUser(){
+/* 🔒 حماية الصفحة */
+async function protectPage(){
   const { data:{user} } = await supabase.auth.getUser();
   if(!user){
-    location.href="login.html";
-    return;
+    window.location.href="login.html";
   }
+}
+protectPage();
 
-  userEmail.innerText=user.email;
+/* تحميل الرصيد */
+async function loadBalance(){
+  const { data:{user} } = await supabase.auth.getUser();
+  if(!user) return;
 
   const { data } = await supabase
     .from("profiles")
     .select("points")
-    .eq("user_id",user.id)
+    .eq("id", user.id)
     .single();
 
-  points.innerText = data?.points || 0;
+  if(data){
+    document.getElementById("points").innerText = data.points;
+  }
 }
-loadUser();
 
-/* زر مشاهدة إعلان */
-document.getElementById("watchAdBtn").onclick = watchAd;
-
+/* مشاهدة إعلان (مؤقتاً بدون شبكة) */
 async function watchAd(){
-  if(watching) return;
-  watching=true;
-
-  let seconds=10;
-  const timer=document.getElementById("timer");
-  const btn=document.getElementById("watchAdBtn");
-
-  btn.disabled=true;
-  timer.innerText="⏳ "+seconds+" ثواني";
-
-  const interval=setInterval(async()=>{
-    seconds--;
-    timer.innerText="⏳ "+seconds+" ثواني";
-
-    if(seconds<=0){
-      clearInterval(interval);
-      timer.innerText="✅ تم مشاهدة الإعلان";
-      btn.disabled=false;
-      watching=false;
-      await rewardUser();
-    }
-  },1000);
+  alert("تم تسجيل مشاهدة الإعلان (سيتم ربط شبكة لاحقاً)");
 }
 
-/* زيادة نقطة + تسجيل بالسجل */
-async function rewardUser(){
-  const { data:{user} } = await supabase.auth.getUser();
-
-  await supabase.rpc("increment_points",{
-    uid:user.id,
-    amount:1
-  });
-
-  await supabase.from("transactions").insert({
-    user_id:user.id,
-    type:"ad",
-    amount:1
-  });
-
-  loadUser();
-}
-
-/* تسجيل خروج */
-async function logout(){
-  await supabase.auth.signOut();
-  location.href="login.html";
-}
+loadBalance();
 </script>
 
 </body>
