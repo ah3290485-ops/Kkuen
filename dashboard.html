@@ -4,69 +4,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لوحة التحكم</title>
+
+<title>Dashboard</title>
 
 <link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
 <script src="supabase.js"></script>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-  <div class="header">
-    <h1>BTCUENE</h1>
-    <div class="info" id="email">...</div>
-  </div>
+  <h1 class="logo">BTCUENE</h1>
 
   <div class="card">
-    <div class="info">رصيدك الحالي</div>
-    <div class="points" id="points">0</div>
+    <p class="email" id="userEmail">loading...</p>
+    <p class="balance">رصيدك الحالي</p>
+    <h2 id="points">0</h2>
   </div>
 
-  <div class="card">
-    <button class="btn-gold">🎬 مشاهدة إعلان</button>
-    <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
-  </div>
+  <button class="btn-main">🎬 مشاهدة إعلان</button>
+  <button class="btn-logout" onclick="logout()">🚪 تسجيل الخروج</button>
 
 </div>
 
-<!-- Bottom Navigation -->
-<div class="nav">
-  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="#"><span>🎬</span>الإعلانات</a>
-  <a href="#"><span>💼</span>محفظتي</a>
-  <a href="#"><span>👤</span>حسابي</a>
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <a class="active">🏠<span>الرئيسية</span></a>
+  <a>🎬<span>الإعلانات</span></a>
+  <a>💼<span>محفظتي</span></a>
+  <a>👤<span>حسابي</span></a>
 </div>
 
 <script>
-async function loadDashboard() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+async function loadUser() {
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) {
     window.location.href = "login.html";
     return;
   }
-
-  document.getElementById("email").innerText = user.email;
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("points")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!error && data) {
-    document.getElementById("points").innerText = data.points;
-  }
+  document.getElementById("userEmail").innerText = data.user.email;
 }
+loadUser();
 
 async function logout() {
   await supabase.auth.signOut();
   window.location.href = "login.html";
 }
-
-loadDashboard();
 </script>
 
 </body>
