@@ -1,154 +1,397 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>شحن الرصيد</title>
 
   <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: linear-gradient(135deg, #020617, #0f172a);
-      color: white;
+    :root{
+      --bg1:#020617;
+      --bg2:#0f172a;
+      --card:#0b1220cc;
+      --border:#1e293b;
+      --gold:#f59e0b;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --danger:#ef4444;
+      --ok:#22c55e;
     }
-
-    .container {
-      padding: 20px;
-      max-width: 420px;
-      margin: auto;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      color:var(--text);
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+      padding:16px 16px 92px;
     }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .container{
+      max-width: 520px;
+      margin: 0 auto;
     }
-
-    .card {
-      background: #020617;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    .title{
+      font-size: 28px;
+      font-weight: 800;
+      margin: 6px 0 8px;
     }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
+    .sub{
+      color:var(--muted);
+      margin:0 0 14px;
+      line-height:1.6;
+      font-size:14px;
     }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      background: gold;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
+    .card{
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      margin-bottom:12px;
     }
-
-    .note {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-top: 10px;
-      text-align: center;
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
     }
-
-    .menu {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #020617;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      border-top: 1px solid #1e293b;
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:#0b1220;
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      width:100%;
+      word-break:break-all;
+      font-size:14px;
     }
+    .btn{
+      width:100%;
+      padding:14px 14px;
+      border-radius:12px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      font-size:16px;
+    }
+    .btn-gold{ background: var(--gold); color:#0b1220; }
+    .btn-dark{ background:#111827; color:var(--text); border:1px solid var(--border); }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
 
-    .menu a {
-      color: white;
-      text-decoration: none;
-      text-align: center;
+    label{
+      display:block;
+      margin: 10px 0 6px;
+      color: var(--muted);
       font-size: 13px;
     }
-
-    .menu a span {
-      display: block;
-      font-size: 22px;
+    input{
+      width:100%;
+      padding:14px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#0b1220;
+      color:var(--text);
+      font-size:16px;
+      outline:none;
     }
+    input:focus{ border-color:#334155; }
+    .hint{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+    .msg{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      font-size:14px;
+      display:none;
+    }
+    .msg.ok{ display:block; border-color: #14532d; background:#052e16; color:#bbf7d0; }
+    .msg.err{ display:block; border-color: #7f1d1d; background:#450a0a; color:#fecaca; }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid var(--border);
+      font-size:14px;
+    }
+    th,td{
+      padding:10px;
+      border-bottom:1px solid var(--border);
+      text-align:right;
+      vertical-align:top;
+    }
+    th{ color:var(--muted); font-weight:700; background:#0b1220; }
+    tr:last-child td{ border-bottom:none; }
+    .status{
+      font-weight:800;
+      padding:6px 10px;
+      border-radius:999px;
+      display:inline-block;
+      font-size:12px;
+      border:1px solid var(--border);
+      background:#0b1220;
+    }
+    .pending{ color: var(--gold); }
+    .approved{ color: var(--ok); }
+    .rejected{ color: var(--danger); }
+
+    /* Bottom menu */
+    .menu{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: rgba(2,6,23,.92);
+      border-top: 1px solid var(--border);
+      padding: 10px 8px;
+      display:flex;
+      justify-content: space-around;
+      backdrop-filter: blur(10px);
+    }
+    .menu a{
+      color:var(--text);
+      text-decoration:none;
+      text-align:center;
+      font-size:12px;
+      width: 20%;
+    }
+    .menu a span{
+      display:block;
+      font-size:22px;
+      margin-bottom:4px;
+    }
+    .active{ color: var(--gold) !important; }
   </style>
 </head>
 
 <body>
+  <div class="container">
+    <div class="title">شحن الرصيد</div>
+    <p class="sub">
+      الشحن حالياً <b>يدوي</b>. انت ابعت التحويل على عنوانك، وبعدها دخّل <b>TXID</b> والمبلغ، ورح ينضاف طلبك بحالة <b>pending</b>.
+    </p>
 
-<div class="container">
-  <h2>💰 شحن الرصيد</h2>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div id="userEmail" style="opacity:.9; font-weight:700"></div>
+        <button class="btn btn-dark" style="width:auto; padding:10px 12px" onclick="logout()">🚪 خروج</button>
+      </div>
+    </div>
 
-  <div class="card">
-    <input type="number" id="amount" placeholder="المبلغ (USD)">
-    <input type="text" id="txid" placeholder="TXID / رقم التحويل">
+    <div class="card">
+      <div style="font-weight:800; margin-bottom:10px;">📥 عنوان الشحن</div>
 
-    <button onclick="submitDeposit()">إرسال طلب الشحن</button>
+      <!-- غيّر العنوان هون لعنوان محفظتك -->
+      <div class="pill" id="depositAddress">
+        TRC20 USDT: <b id="addrText">PUT_YOUR_USDT_TRC20_ADDRESS_HERE</b>
+      </div>
 
-    <div class="note">
-      ⚠️ سيتم مراجعة الطلب يدوياً من الإدارة
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn-dark" onclick="copyAddr()">📋 نسخ العنوان</button>
+      </div>
+
+      <div class="hint">
+        ملاحظة: إذا بدك شحن بعملة تانية (BTC مثلاً) خبرني وبعملها اختيار من قائمة.
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; margin-bottom:8px;">🧾 إرسال طلب شحن</div>
+
+      <label>المبلغ</label>
+      <input id="amount" type="number" inputmode="decimal" placeholder="مثال: 100" min="1" />
+
+      <label>TXID / رقم العملية</label>
+      <input id="txid" type="text" placeholder="الصقه من محفظتك" />
+
+      <button id="submitBtn" class="btn btn-gold" style="margin-top:12px" onclick="submitDeposit()">
+        ✅ إرسال الطلب
+      </button>
+
+      <div id="msgBox" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800; margin-bottom:10px;">📌 طلبات الشحن الخاصة فيك</div>
+      <div id="listWrap">
+        <div class="hint">جاري التحميل...</div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- القائمة السفلية -->
-<div class="menu">
-  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="deposit.html"><span>➕</span>شحن</a>
-  <a href="transactions.html"><span>📜</span>السجل</a>
-  <a href="account.html"><span>👤</span>حسابي</a>
-</div>
+  <div class="menu">
+    <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
+    <a href="ads.html"><span>🎬</span>الإعلانات</a>
+    <a href="wallet.html"><span>💼</span>محفظتي</a>
+    <a href="account.html"><span>👤</span>حسابي</a>
+    <a class="active" href="deposit.html"><span>➕</span>شحن</a>
+  </div>
 
 <script>
-async function submitDeposit() {
-  const amount = document.getElementById("amount").value;
-  const txid = document.getElementById("txid").value;
+  let currentUser = null;
 
-  if (!amount || !txid) {
-    alert("يرجى تعبئة جميع الحقول");
-    return;
+  async function init() {
+    // تحقق تسجيل الدخول
+    const { data } = await supabase.auth.getUser();
+    currentUser = data?.user;
+
+    if (!currentUser) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    document.getElementById("userEmail").textContent = currentUser.email || "";
+    await loadMyDeposits();
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    alert("يجب تسجيل الدخول");
-    return;
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
   }
 
-  const { error } = await supabase
-    .from("deposits")
-    .insert([{
-      user_id: user.id,
-      amount: amount,
-      txid: txid,
-      status: "pending"
+  function setMsg(type, text){
+    const box = document.getElementById("msgBox");
+    box.className = "msg " + (type === "ok" ? "ok" : "err");
+    box.textContent = text;
+  }
+
+  function copyAddr(){
+    const addr = document.getElementById("addrText").textContent.trim();
+    navigator.clipboard.writeText(addr).then(()=>{
+      setMsg("ok","✅ تم نسخ عنوان الشحن");
+      setTimeout(()=>{ document.getElementById("msgBox").style.display="none"; }, 1500);
+      document.getElementById("msgBox").style.display="block";
+    }).catch(()=>{
+      setMsg("err","❌ ما قدرت انسخ، انسخه يدوي");
+      document.getElementById("msgBox").style.display="block";
+    });
+  }
+
+  function statusBadge(s){
+    const st = (s || "pending").toLowerCase();
+    let cls = "pending", label = "قيد المراجعة";
+    if(st === "approved"){ cls="approved"; label="مقبول"; }
+    if(st === "rejected"){ cls="rejected"; label="مرفوض"; }
+    return `<span class="status ${cls}">${label}</span>`;
+  }
+
+  async function loadMyDeposits(){
+    const wrap = document.getElementById("listWrap");
+    wrap.innerHTML = `<div class="hint">جاري التحميل...</div>`;
+
+    const { data, error } = await supabase
+      .from("deposits")
+      .select("amount, txid, status, created_at")
+      .eq("user_id", currentUser.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      wrap.innerHTML = `<div class="hint">❌ في مشكلة بجلب البيانات. تأكد من Policies (RLS).</div>`;
+      return;
+    }
+
+    if (!data || data.length === 0){
+      wrap.innerHTML = `<div class="hint">ما عندك طلبات شحن لحد الآن.</div>`;
+      return;
+    }
+
+    const rows = data.map(r=>{
+      const dt = new Date(r.created_at);
+      const when = isNaN(dt.getTime()) ? "" : dt.toLocaleString();
+      return `
+        <tr>
+          <td>${statusBadge(r.status)}</td>
+          <td>${Number(r.amount || 0)}</td>
+          <td style="word-break:break-all">${r.txid || ""}</td>
+          <td>${when}</td>
+        </tr>
+      `;
+    }).join("");
+
+    wrap.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>الحالة</th>
+            <th>المبلغ</th>
+            <th>TXID</th>
+            <th>التاريخ</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  async function submitDeposit(){
+    const btn = document.getElementById("submitBtn");
+    const amountEl = document.getElementById("amount");
+    const txidEl = document.getElementById("txid");
+    const amount = Number(amountEl.value);
+    const txid = (txidEl.value || "").trim();
+
+    document.getElementById("msgBox").style.display="block";
+
+    if (!amount || amount < 1){
+      setMsg("err","❌ اكتب مبلغ صحيح");
+      return;
+    }
+    if (txid.length < 6){
+      setMsg("err","❌ TXID قصير، لصق رقم العملية الكامل");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "⏳ جاري الإرسال...";
+
+    // 1) إدخال طلب الشحن
+    const { error: insErr } = await supabase
+      .from("deposits")
+      .insert([{
+        user_id: currentUser.id,
+        amount: amount,
+        txid: txid,
+        status: "pending"
+      }]);
+
+    if (insErr){
+      btn.disabled = false;
+      btn.textContent = "✅ إرسال الطلب";
+      setMsg("err","❌ ما تم الإرسال. غالباً Policies ناقصة للـ deposits.");
+      return;
+    }
+
+    // 2) سجل عمليات (اختياري) - إذا عندك جدول transactions
+    // لو ما عندك الجدول أو فيه RLS بيطلع خطأ، ما رح نخرب شي.
+    await supabase.from("transactions").insert([{
+      user_id: currentUser.id,
+      type: "deposit_request",
+      amount: Math.round(amount)
     }]);
 
-  if (error) {
-    alert(error.message);
-  } else {
-    alert("✅ تم إرسال طلب الشحن بنجاح");
-    document.getElementById("amount").value = "";
-    document.getElementById("txid").value = "";
-  }
-}
-</script>
+    setMsg("ok","✅ تم إرسال طلب الشحن. رح يتم مراجعته من الإدارة.");
+    amountEl.value = "";
+    txidEl.value = "";
 
+    await loadMyDeposits();
+
+    btn.disabled = false;
+    btn.textContent = "✅ إرسال الطلب";
+  }
+
+  init();
+</script>
 </body>
 </html>
+```0
