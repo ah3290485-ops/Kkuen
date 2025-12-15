@@ -1,202 +1,175 @@
+
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>محفظتي</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>محفظتي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <script src="supabase.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #020617, #0f172a);
-      color: white;
-      min-height: 100vh;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Tahoma, Arial;
+  background:#020617;
+  color:white;
+}
 
-    .container {
-      padding: 20px;
-      padding-bottom: 90px;
-    }
+.container{
+  max-width:420px;
+  margin:auto;
+  padding:20px;
+  padding-bottom:120px;
+}
 
-    h1 {
-      font-size: 26px;
-      margin-bottom: 20px;
-    }
+h1{
+  text-align:center;
+  color:#facc15;
+  margin-bottom:20px;
+}
 
-    .card {
-      background: #020617;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
+.card{
+  background:#020617;
+  border:1px solid #1e293b;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+}
 
-    .label {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 6px;
-    }
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+  font-size:16px;
+}
 
-    .value {
-      font-size: 24px;
-      font-weight: bold;
-      color: gold;
-      margin-bottom: 10px;
-    }
+.value{
+  font-weight:bold;
+  color:#22c55e;
+}
 
-    .sub {
-      font-size: 14px;
-      opacity: 0.85;
-      margin-bottom: 10px;
-    }
+.notice{
+  font-size:14px;
+  opacity:.7;
+  line-height:1.6;
+}
 
-    input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
+input{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  margin-top:10px;
+  font-size:16px;
+}
 
-    button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      border: none;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:10px;
+}
 
-    .btn-deposit {
-      background: gold;
-      color: black;
-    }
+.btn-gold{
+  background:#facc15;
+  color:black;
+  font-weight:bold;
+}
 
-    .btn-withdraw {
-      background: #334155;
-      color: white;
-    }
+.menu{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#020617;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+  border-top:1px solid #1e293b;
+}
 
-    /* Bottom menu */
-    .menu {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #020617;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      border-top: 1px solid #1e293b;
-    }
+.menu a{
+  color:white;
+  text-decoration:none;
+  font-size:14px;
+  text-align:center;
+}
 
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-size: 16px;
-      text-align: center;
-    }
-
-    .menu a span {
-      display: block;
-      font-size: 20px;
-    }
-  </style>
+.menu a span{
+  display:block;
+  font-size:22px;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>💼 محفظتي</h1>
+<div class="container">
+  <h1>💼 محفظتي</h1>
 
-    <!-- الرصيد -->
-    <div class="card">
-      <div class="label">رصيدك الحالي (نقاط)</div>
-      <div class="value" id="points">0</div>
-      <div class="sub">1 نقطة = 1 دولار</div>
-    </div>
-
-    <!-- إيداع -->
-    <div class="card">
-      <h3>➕ شحن الرصيد</h3>
-      <div class="sub">اختر مبلغ الشحن (USDT)</div>
-
-      <button class="btn-deposit">10 USDT</button>
-      <button class="btn-deposit">50 USDT</button>
-      <button class="btn-deposit">100 USDT</button>
-
-      <div class="sub">
-        سيتم تفعيل الشحن لاحقاً
-      </div>
-    </div>
-
-    <!-- سحب -->
-    <div class="card">
-      <h3>➖ سحب الرصيد</h3>
-
-      <input type="number" placeholder="عدد النقاط المراد سحبها">
-      <input type="text" placeholder="عنوان المحفظة (USDT)">
-
-      <button class="btn-withdraw">
-        طلب سحب
-      </button>
-
-      <div class="sub">
-        السحب يتم يدوياً خلال 24 ساعة
-      </div>
+  <div class="card">
+    <div class="row">
+      <div>رصيد النقاط</div>
+      <div class="value"><span id="points">0</span> نقطة</div>
     </div>
   </div>
 
-  <!-- Bottom Navigation -->
-  <div class="menu">
-    <a href="dashboard.html">
-      <span>🏠</span>
-      الرئيسية
-    </a>
-
-    <a href="wallet.html">
-      <span>💼</span>
-      محفظتي
-    </a>
-
-    <a href="ads.html">
-      <span>🎬</span>
-      الإعلانات
-    </a>
-
-    <a href="account.html">
-      <span>👤</span>
-      حسابي
-    </a>
+  <div class="card">
+    <div class="notice">
+      💡 حالياً السحب غير مفعّل.<br>
+      سيتم تفعيل طلبات السحب لاحقاً بعد ربط وسائل الدفع.
+    </div>
   </div>
 
-  <script>
-    async function loadWallet() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+  <div class="card">
+    <input type="text" placeholder="عنوان المحفظة (USDT)" disabled>
+    <button class="btn-gold" disabled>
+      🚫 السحب غير متاح حالياً
+    </button>
+  </div>
+</div>
 
-      const { data } = await supabase
-        .from("profiles")
-        .select("points")
-        .eq("user_id", user.id)
-        .single();
+<div class="menu">
+  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
+  <a href="ads.html"><span>🎬</span>إعلانات</a>
+  <a href="wallet.html"><span>💼</span>محفظتي</a>
+  <a href="account.html"><span>👤</span>حسابي</a>
+</div>
 
-      if (data) {
-        document.getElementById("points").innerText = data.points;
-      }
-    }
+<script>
+/* 🔒 حماية الصفحة */
+async function protectPage(){
+  const { data:{user} } = await supabase.auth.getUser();
+  if(!user){
+    window.location.href="login.html";
+  }
+}
+protectPage();
 
-    loadWallet();
-  </script>
+/* تحميل الرصيد */
+async function loadBalance(){
+  const { data:{user} } = await supabase.auth.getUser();
+  if(!user) return;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("points")
+    .eq("id", user.id)
+    .single();
+
+  if(data){
+    document.getElementById("points").innerText = data.points;
+  }
+}
+
+loadBalance();
+</script>
 
 </body>
 </html>
