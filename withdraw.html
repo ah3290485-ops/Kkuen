@@ -2,90 +2,80 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>سحب الأرباح</title>
+  <title>طلب سحب</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <style>
+    .note {
+      font-size: 14px;
+      opacity: .8;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>💸 طلب سحب</h2>
-
-  <p id="userEmail" style="opacity:.7"></p>
+  <h1>💸 طلب سحب</h1>
 
   <div class="card">
-    <label>المبلغ</label>
-    <input type="number" id="amount" placeholder="أدخل المبلغ" min="1">
-
-    <label>عنوان المحفظة</label>
-    <input type="text" id="wallet" placeholder="عنوان محفظتك">
-
-    <button class="btn-gold" onclick="submitWithdraw()">📤 إرسال طلب السحب</button>
-
-    <p id="msg" style="margin-top:10px;"></p>
+    <input type="number" id="amount" placeholder="المبلغ" min="1">
+    <input type="text" id="wallet" placeholder="عنوان المحفظة">
+    <button class="btn-gold" onclick="submitWithdraw()">إرسال الطلب</button>
   </div>
 
-  <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
+  <div class="note">
+    ⏳ تتم مراجعة طلب السحب يدوياً من الإدارة
+  </div>
+
+  <button class="btn-dark" onclick="location.href='dashboard.html'">⬅️ رجوع</button>
 </div>
 
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
   <a href="wallet.html"><span>💰</span>محفظتي</a>
   <a href="transactions.html"><span>📜</span>السجل</a>
-  <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
 <script src="supabase.js"></script>
 
 <script>
-async function loadUser() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    location.href = "login.html";
-    return;
-  }
-  document.getElementById("userEmail").innerText = user.email;
-}
-loadUser();
-
 async function submitWithdraw() {
   const amount = document.getElementById("amount").value;
   const wallet = document.getElementById("wallet").value;
-  const msg = document.getElementById("msg");
 
   if (!amount || !wallet) {
-    msg.innerText = "❌ الرجاء تعبئة جميع الحقول";
-    msg.style.color = "red";
+    alert("يرجى تعبئة جميع الحقول");
     return;
   }
 
   const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert("الرجاء تسجيل الدخول");
+    return;
+  }
 
   const { error } = await supabase
     .from("withdrawals")
-    .insert([{
-      user_id: user.id,
-      amount: amount,
-      wallet: wallet
-    }]);
+    .insert([
+      {
+        user_id: user.id,
+        amount: amount,
+        wallet: wallet
+      }
+    ]);
 
   if (error) {
-    msg.innerText = "❌ حدث خطأ: " + error.message;
-    msg.style.color = "red";
+    alert("حدث خطأ");
   } else {
-    msg.innerText = "✅ تم إرسال طلب السحب (قيد المراجعة)";
-    msg.style.color = "green";
-    document.getElementById("amount").value = "";
-    document.getElementById("wallet").value = "";
+    alert("تم إرسال طلب السحب بنجاح");
+    location.href = "dashboard.html";
   }
-}
-
-async function logout() {
-  await supabase.auth.signOut();
-  location.href = "login.html";
 }
 </script>
 
