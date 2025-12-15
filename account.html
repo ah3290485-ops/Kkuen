@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حسابي</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(160deg,#020617,#0f172a);
+  font-family:Arial;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.box{
+  width:90%;
+  max-width:380px;
+  background:#020617;
+  padding:25px;
+  border-radius:18px;
+}
+
+h2{
+  text-align:center;
+  color:gold;
+  margin-bottom:20px;
+}
+
+.item{
+  margin-bottom:15px;
+  font-size:15px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  margin-top:6px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  background:gold;
+  font-weight:bold;
+  font-size:16px;
+  margin-top:10px;
+}
+
+.back{
+  text-align:center;
+  margin-top:15px;
+}
+
+.back a{
+  color:gold;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>👤 حسابي</h2>
+
+  <div class="item">📧 الإيميل:
+    <div id="email">...</div>
+  </div>
+
+  <div class="item">🆔 رقم الحساب:
+    <div id="userid">...</div>
+  </div>
+
+  <div class="item">📅 تاريخ إنشاء الحساب:
+    <div id="created">...</div>
+  </div>
+
+  <hr style="margin:20px 0;opacity:.2">
+
+  <div class="item">
+    🔐 تغيير كلمة المرور
+    <input id="newpass" type="password" placeholder="كلمة المرور الجديدة">
+  </div>
+
+  <button onclick="changePassword()">تحديث كلمة المرور</button>
+
+  <div class="back">
+    <a href="dashboard.html">⬅️ رجوع</a>
+  </div>
+</div>
+
+<script>
+async function loadAccount(){
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if(!user){
+    window.location.href="login.html";
+    return;
+  }
+
+  document.getElementById("email").innerText = user.email;
+  document.getElementById("userid").innerText = user.id;
+  document.getElementById("created").innerText =
+    new Date(user.created_at).toLocaleDateString();
+}
+
+async function changePassword(){
+  const newPass = document.getElementById("newpass").value;
+
+  if(newPass.length < 6){
+    alert("كلمة المرور لازم تكون 6 أحرف على الأقل");
+    return;
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: newPass
+  });
+
+  if(error){
+    alert(error.message);
+  }else{
+    alert("تم تغيير كلمة المرور بنجاح ✅");
+    document.getElementById("newpass").value="";
+  }
+}
+
+loadAccount();
+</script>
+
+</body>
+</html>
