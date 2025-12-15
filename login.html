@@ -2,53 +2,105 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>تسجيل الدخول</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
+<title>تسجيل الدخول</title>
 
-  <!-- Style -->
-  <link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
+
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(160deg, #020617, #0f172a);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.box {
+  width: 90%;
+  max-width: 350px;
+  background: #020617;
+  padding: 25px;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.box h2 {
+  margin-bottom: 20px;
+  color: gold;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: gold;
+  color: black;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.link {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.link a {
+  color: gold;
+  text-decoration: none;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="box">
-    <h2>تسجيل الدخول</h2>
+<div class="box">
+  <h2>تسجيل الدخول</h2>
 
-    <input id="email" type="email" placeholder="الإيميل">
-    <input id="password" type="password" placeholder="كلمة المرور">
+  <input id="email" type="email" placeholder="الإيميل">
+  <input id="password" type="password" placeholder="كلمة المرور">
 
-    <button onclick="login()">دخول</button>
+  <button onclick="login()">دخول</button>
 
-    <a href="register.html">ما عندك حساب؟ إنشاء حساب</a>
-    <a href="index.html">⬅ الرجوع للرئيسية</a>
+  <div class="link">
+    ما عندك حساب؟  
+    <a href="register.html">إنشاء حساب</a>
   </div>
+</div>
 
-  <script>
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+<script>
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-      if (!email || !password) {
-        alert("يرجى إدخال الإيميل وكلمة المرور");
-        return;
-      }
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        alert(error.message);
-      } else {
-        window.location.href = "dashboard.html";
-      }
-    }
-  </script>
+  if (error) {
+    alert(error.message);
+  } else {
+    window.location.href = "dashboard.html";
+  }
+}
+</script>
 
 </body>
 </html>
