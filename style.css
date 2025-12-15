@@ -6,54 +6,94 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
   background: linear-gradient(160deg, #020617, #0f172a);
   color: white;
 }
 
-/* ===== HOME ===== */
-.home {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+/* ===== APP ===== */
+.app {
   padding: 20px;
+  padding-bottom: 90px;
   text-align: center;
 }
 
-.home h1 {
-  font-size: 42px;
+.logo {
+  font-size: 36px;
   color: gold;
-  margin-bottom: 10px;
+  margin-bottom: 30px;
 }
 
-.home p {
-  font-size: 18px;
-  opacity: 0.9;
-  margin-bottom: 40px;
+/* ===== CARD ===== */
+.card {
+  background: #020617;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.email {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.balance {
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.card h2 {
+  font-size: 42px;
+  color: gold;
+  margin: 10px 0 0;
 }
 
 /* ===== BUTTONS ===== */
-.btn-main,
-.btn-second {
-  width: 100%;
-  max-width: 320px;
-  padding: 16px;
-  margin-bottom: 15px;
-  border-radius: 14px;
-  font-size: 18px;
-  font-weight: bold;
-  text-decoration: none;
-  display: block;
-}
-
 .btn-main {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
   background: gold;
   color: black;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
 }
 
-.btn-second {
+.btn-logout {
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: none;
   background: #1e293b;
   color: white;
+  font-size: 16px;
+}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #020617;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #1e293b;
+}
+
+.bottom-nav a {
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}
+
+.bottom-nav a span {
+  display: block;
+  font-size: 11px;
+}
+
+.bottom-nav .active {
+  color: gold;
 }
