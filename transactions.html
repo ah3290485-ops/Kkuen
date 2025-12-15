@@ -1,76 +1,119 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>سجل العمليات</title>
+  <meta charset="UTF-8">
+  <title>سجل العمليات</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
-<script src="supabase.js"></script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#020617,#0f172a);
-  color:white;
-}
-.container{
-  max-width:500px;
-  margin:auto;
-  padding:20px;
-}
-h1{text-align:center;margin-bottom:20px}
-.card{
-  background:#020617;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.type{opacity:.9}
-.amount{font-weight:bold;color:#facc15}
-.date{font-size:12px;opacity:.6}
-.menu{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  background:#020617;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 0;
-  border-top:1px solid #1e293b;
-}
-.menu a{
-  color:white;
-  text-decoration:none;
-  text-align:center;
-  font-size:13px;
-}
-.menu span{display:block;font-size:20px}
-</style>
+  <style>
+    body{
+      margin:0;
+      font-family:Tahoma, Arial;
+      background:#020617;
+      color:white;
+    }
+
+    .container{
+      max-width:480px;
+      margin:auto;
+      padding:20px;
+      padding-bottom:120px;
+    }
+
+    h1{
+      text-align:center;
+      color:#facc15;
+      margin-bottom:20px;
+    }
+
+    .item{
+      background:#020617;
+      border:1px solid #1e293b;
+      border-radius:12px;
+      padding:15px;
+      margin-bottom:12px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:6px;
+      font-size:14px;
+    }
+
+    .type{
+      font-weight:bold;
+    }
+
+    .plus{ color:#22c55e; }
+    .minus{ color:#ef4444; }
+
+    .date{
+      font-size:12px;
+      opacity:.7;
+      margin-top:5px;
+      text-align:left;
+    }
+
+    .empty{
+      text-align:center;
+      opacity:.7;
+      margin-top:40px;
+    }
+
+    /* Bottom menu */
+    .menu{
+      position:fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:#020617;
+      display:flex;
+      justify-content:space-around;
+      padding:10px 0;
+      border-top:1px solid #1e293b;
+    }
+
+    .menu a{
+      color:white;
+      text-decoration:none;
+      font-size:14px;
+      text-align:center;
+    }
+
+    .menu a span{
+      display:block;
+      font-size:22px;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
   <h1>📜 سجل العمليات</h1>
+
   <div id="list"></div>
+
+  <div id="empty" class="empty" style="display:none">
+    لا توجد عمليات بعد
+  </div>
 </div>
 
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="ads.html"><span>🎬</span>إعلان</a>
+  <a href="ads.html"><span>🎬</span>إعلانات</a>
   <a href="wallet.html"><span>💼</span>محفظتي</a>
-  <a href="transactions.html"><span>📜</span>السجل</a>
+  <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
 <script>
 async function loadTransactions(){
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data:{user} } = await supabase.auth.getUser();
   if(!user){
     window.location.href="login.html";
     return;
@@ -80,31 +123,38 @@ async function loadTransactions(){
     .from("transactions")
     .select("*")
     .eq("user_id", user.id)
-    .order("created_at",{ascending:false});
+    .order("created_at", { ascending:false });
 
-  if(error){
-    alert(error.message);
-    return;
-  }
+  const list = document.getElementById("list");
 
-  const list=document.getElementById("list");
-  list.innerHTML="";
-
-  if(data.length===0){
-    list.innerHTML="<p style='text-align:center;opacity:.6'>لا يوجد عمليات</p>";
+  if(!data || data.length === 0){
+    document.getElementById("empty").style.display="block";
     return;
   }
 
   data.forEach(t=>{
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`
-      <div>
-        <div class="type">🎬 مشاهدة إعلان</div>
-        <div class="date">${new Date(t.created_at).toLocaleString()}</div>
+    const div = document.createElement("div");
+    div.className="item";
+
+    const amountClass = t.amount >= 0 ? "plus" : "minus";
+    const typeText =
+      t.type === "ad" ? "مشاهدة إعلان" :
+      t.type === "deposit" ? "شحن" :
+      t.type === "withdraw" ? "سحب" :
+      "عملية";
+
+    div.innerHTML = `
+      <div class="row">
+        <div class="type">${typeText}</div>
+        <div class="${amountClass}">
+          ${t.amount > 0 ? "+" : ""}${t.amount} نقطة
+        </div>
       </div>
-      <div class="amount">+${t.amount}</div>
+      <div class="date">
+        ${new Date(t.created_at).toLocaleString("ar-EG")}
+      </div>
     `;
+
     list.appendChild(div);
   });
 }
