@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
+</head>
+<body>
+<h2>Dashboard</h2>
+<p id="user"></p>
+<button onclick="logout()">Logout</button>
+<script src="supabase.js"></script>
+<script>
+async function load(){
+  const { data } = await supabase.auth.getUser();
+  document.getElementById("user").innerText=data.user.email;
+}
+async function logout(){
+  await supabase.auth.signOut();
+  window.location.href="login.html";
+}
+load();
+</script>
+</body>
+</html>
