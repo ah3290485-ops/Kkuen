@@ -17,22 +17,17 @@
 
   <div class="box" id="adminBox" style="display:none;">
     <h2>لوحة الأدمن</h2>
+    <p class="small">إضافة / خصم نقاط المستخدمين</p>
 
-    <p class="small">إدارة المستخدمين والنقاط</p>
+    <input id="userEmail" type="email" placeholder="إيميل المستخدم">
+    <input id="points" type="number" placeholder="عدد النقاط">
 
-    <hr style="margin:20px 0; opacity:0.3">
+    <button onclick="addPoints()">➕ إضافة نقاط</button>
+    <button onclick="subtractPoints()">➖ خصم نقاط</button>
 
-    <input type="email" placeholder="إيميل المستخدم">
-    <input type="number" placeholder="عدد النقاط">
+    <p class="small" id="msg"></p>
 
-    <button>➕ إضافة نقاط</button>
-    <button>➖ خصم نقاط</button>
-
-    <hr style="margin:20px 0; opacity:0.3">
-
-    <button>📄 عرض سجل العمليات</button>
-
-    <a href="dashboard.html">⬅ رجوع للوحة التحكم</a>
+    <a href="dashboard.html">⬅ رجوع</a>
   </div>
 
   <script>
@@ -42,20 +37,65 @@
       const { data } = await supabase.auth.getUser();
 
       if (!data || !data.user) {
-        // مو مسجّل دخول
         window.location.href = "login.html";
         return;
       }
 
       if (data.user.email !== ADMIN_EMAIL) {
-        // مو أدمن
-        alert("غير مصرح لك بالدخول");
+        alert("غير مصرح لك");
         window.location.href = "dashboard.html";
         return;
       }
 
-      // أدمن ✔️
       document.getElementById("adminBox").style.display = "block";
+    }
+
+    async function addPoints() {
+      await updatePoints(true);
+    }
+
+    async function subtractPoints() {
+      await updatePoints(false);
+    }
+
+    async function updatePoints(isAdd) {
+      const email = document.getElementById("userEmail").value.trim();
+      const pts = parseInt(document.getElementById("points").value);
+      const msg = document.getElementById("msg");
+
+      if (!email || !pts) {
+        msg.innerText = "يرجى إدخال الإيميل وعدد النقاط";
+        return;
+      }
+
+      // جلب المستخدم من جدول profiles
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("id, points")
+        .eq("email", email)
+        .single();
+
+      if (error || !profile) {
+        msg.innerText = "المستخدم غير موجود";
+        return;
+      }
+
+      let newPoints = isAdd
+        ? profile.points + pts
+        : profile.points - pts;
+
+      if (newPoints < 0) newPoints = 0;
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ points: newPoints })
+        .eq("email", email);
+
+      if (updateError) {
+        msg.innerText = "خطأ أثناء التحديث";
+      } else {
+        msg.innerText = "تم التحديث بنجاح ✅";
+      }
     }
 
     checkAdmin();
