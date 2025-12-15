@@ -2,60 +2,72 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة التحكم</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم</title>
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-
-  <!-- Style -->
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 </head>
 
 <body>
 
-  <div class="box">
-    <h2>لوحة التحكم</h2>
+<div class="container">
 
-    <p class="small">مرحباً</p>
-    <h3 id="userEmail">...</h3>
-
-    <hr style="margin:20px 0; opacity:0.3">
-
-    <button onclick="go('charge.html')">💳 شحن</button>
-    <button onclick="go('ads.html')">📺 مشاهدة إعلان</button>
-    <button onclick="go('withdraw.html')">💸 سحب</button>
-
-    <hr style="margin:20px 0; opacity:0.3">
-
-    <button onclick="logout()">تسجيل الخروج</button>
+  <div class="header">
+    <h1>BTCUENE</h1>
+    <div class="info" id="email">...</div>
   </div>
 
-  <script>
-    async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
+  <div class="card">
+    <div class="info">رصيدك الحالي</div>
+    <div class="points" id="points">0</div>
+  </div>
 
-      if (!data || !data.user) {
-        window.location.href = "login.html";
-        return;
-      }
+  <div class="card">
+    <button class="btn-gold">🎬 مشاهدة إعلان</button>
+    <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
+  </div>
 
-      document.getElementById("userEmail").innerText = data.user.email;
-    }
+</div>
 
-    function go(page) {
-      alert("هذه الصفحة ستُفعّل لاحقاً");
-      // window.location.href = page;
-    }
+<!-- Bottom Navigation -->
+<div class="nav">
+  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
+  <a href="#"><span>🎬</span>الإعلانات</a>
+  <a href="#"><span>💼</span>محفظتي</a>
+  <a href="#"><span>👤</span>حسابي</a>
+</div>
 
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    }
+<script>
+async function loadDashboard() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-    loadUser();
-  </script>
+  document.getElementById("email").innerText = user.email;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("points")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!error && data) {
+    document.getElementById("points").innerText = data.points;
+  }
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
+}
+
+loadDashboard();
+</script>
 
 </body>
 </html>
