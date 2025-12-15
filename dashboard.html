@@ -2,57 +2,172 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>لوحة التحكم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Dashboard</title>
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
 
-<link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
-<script src="supabase.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .email {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .balance {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .actions button {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .watch {
+      background: gold;
+      color: black;
+      font-weight: bold;
+    }
+
+    .logout {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Bottom menu */
+    .menu {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #020617;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid #1e293b;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .menu a span {
+      display: block;
+      font-size: 20px;
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="app">
+  <div class="container">
+    <h1>BTCUENE</h1>
+    <div class="email" id="userEmail">...</div>
 
-  <h1 class="logo">BTCUENE</h1>
+    <div class="card">
+      <div>رصيدك الحالي</div>
+      <div class="balance" id="points">0</div>
+    </div>
 
-  <div class="card">
-    <p class="email" id="userEmail">loading...</p>
-    <p class="balance">رصيدك الحالي</p>
-    <h2 id="points">0</h2>
+    <div class="actions">
+      <button class="watch" onclick="alert('سيتم إضافة صفحة الإعلانات لاحقاً')">
+        🎬 مشاهدة إعلان
+      </button>
+
+      <button class="logout" onclick="logout()">
+        🚪 تسجيل الخروج
+      </button>
+    </div>
   </div>
 
-  <button class="btn-main">🎬 مشاهدة إعلان</button>
-  <button class="btn-logout" onclick="logout()">🚪 تسجيل الخروج</button>
+  <!-- Bottom Navigation -->
+  <div class="menu">
+    <a href="dashboard.html">
+      <span>🏠</span>
+      الرئيسية
+    </a>
 
-</div>
+    <a href="account.html">
+      <span>👤</span>
+      حسابي
+    </a>
 
-<!-- Bottom Nav -->
-<div class="bottom-nav">
-  <a class="active">🏠<span>الرئيسية</span></a>
-  <a>🎬<span>الإعلانات</span></a>
-  <a>💼<span>محفظتي</span></a>
-  <a>👤<span>حسابي</span></a>
-</div>
+    <a href="ads.html">
+      <span>🎬</span>
+      الإعلانات
+    </a>
 
-<script>
-async function loadUser() {
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) {
-    window.location.href = "login.html";
-    return;
-  }
-  document.getElementById("userEmail").innerText = data.user.email;
-}
-loadUser();
+    <a href="#" onclick="logout()">
+      <span>🚪</span>
+      خروج
+    </a>
+  </div>
 
-async function logout() {
-  await supabase.auth.signOut();
-  window.location.href = "login.html";
-}
-</script>
+  <script>
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      document.getElementById("userEmail").innerText = user.email;
+
+      // جلب النقاط
+      const { data } = await supabase
+        .from("profiles")
+        .select("points")
+        .eq("user_id", user.id)
+        .single();
+
+      if (data) {
+        document.getElementById("points").innerText = data.points;
+      }
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    }
+
+    loadUser();
+  </script>
 
 </body>
 </html>
