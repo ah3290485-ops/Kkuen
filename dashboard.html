@@ -1,137 +1,79 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>لوحة التحكم</title>
+  <meta charset="UTF-8">
+  <title>لوحة التحكم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
-<script src="supabase.js"></script>
-
-<style>
-body {
-  background:#020617;
-  color:white;
-  font-family:Tahoma, Arial;
-}
-
-.container {
-  max-width:400px;
-  margin:40px auto;
-  text-align:center;
-}
-
-.card {
-  background:#020617;
-  border:1px solid #1e293b;
-  padding:20px;
-  border-radius:10px;
-  margin-bottom:20px;
-}
-
-button, a.btn {
-  display:block;
-  width:100%;
-  margin:10px 0;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  font-size:16px;
-  text-decoration:none;
-  cursor:pointer;
-}
-
-.btn-gold {
-  background:#facc15;
-  color:#000;
-}
-
-.btn-dark {
-  background:#1e293b;
-  color:white;
-}
-
-.balance {
-  font-size:22px;
-  margin-top:10px;
-}
-
-.menu {
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#020617;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 0;
-  border-top:1px solid #1e293b;
-}
-
-.menu a {
-  color:white;
-  text-decoration:none;
-  font-size:14px;
-  text-align:center;
-}
-
-.menu a span {
-  display:block;
-  font-size:22px;
-}
-</style>
+  <style>
+    .balance {
+      font-size: 26px;
+      margin: 15px 0;
+      color: gold;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>لوحة التحكم</h2>
-
+  <h1>BTCUENE</h1>
   <div id="userEmail" style="opacity:.7;margin-bottom:10px"></div>
 
   <div class="card">
-    <div>رصيدك الحالي</div>
+    <div>💰 رصيدك الحالي</div>
     <div class="balance" id="points">0</div>
-
-    <button class="btn-gold" onclick="watchAd()">🎬 مشاهدة إعلان (+3 نقاط)</button>
-
-    <!-- ✅ زر السحب بالمكان الصحيح -->
-    <a href="withdraw.html" class="btn-dark">💸 طلب سحب</a>
-
-    <a href="wallet.html" class="btn-dark">💼 محفظتي</a>
-    <a href="transactions.html" class="btn-dark">📜 سجل العمليات</a>
-
-    <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
   </div>
+
+  <button class="btn-gold" onclick="location.href='ads.html'">🎥 مشاهدة إعلان</button>
+
+  <button class="btn-gold" onclick="location.href='deposit.html'">➕ شحن الرصيد</button>
+
+  <button class="btn-gold" onclick="location.href='withdraw.html'">💸 طلب سحب</button>
+
+  <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
 </div>
 
-<!-- القائمة السفلية -->
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
   <a href="ads.html"><span>🎬</span>إعلانات</a>
-  <a href="wallet.html"><span>💼</span>محفظتي</a>
+  <a href="wallet.html"><span>💰</span>محفظتي</a>
+  <a href="transactions.html"><span>📜</span>السجل</a>
   <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
+<script src="supabase.js"></script>
+
 <script>
-async function loadUser() {
+async function loadDashboard() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    window.location.href = "login.html";
+    location.href = "login.html";
     return;
   }
-  document.getElementById("userEmail").innerText = user.email;
-}
-loadUser();
 
-function watchAd() {
-  alert("الإعلانات رح نفعّلها بعدين");
+  document.getElementById("userEmail").innerText = user.email;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("points")
+    .eq("id", user.id)
+    .single();
+
+  if (!error && data) {
+    document.getElementById("points").innerText = data.points;
+  }
 }
+
+loadDashboard();
 
 async function logout() {
   await supabase.auth.signOut();
-  window.location.href = "login.html";
+  location.href = "login.html";
 }
 </script>
 
