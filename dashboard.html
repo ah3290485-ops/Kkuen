@@ -4,7 +4,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>لوحة التحكم</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -13,19 +12,24 @@
 <style>
 body{
   margin:0;
-  font-family: Arial;
-  background: linear-gradient(135deg,#020617,#0f172a);
+  font-family:Arial;
+  background:linear-gradient(135deg,#020617,#0f172a);
   color:white;
 }
-
-/* container */
 .container{
   padding:20px;
+  padding-bottom:120px;
   max-width:420px;
   margin:auto;
 }
-
-/* card */
+h1{
+  color:gold;
+  margin-bottom:5px;
+}
+#userEmail{
+  opacity:.7;
+  margin-bottom:15px;
+}
 .card{
   background:#020617;
   border-radius:14px;
@@ -33,40 +37,37 @@ body{
   text-align:center;
   box-shadow:0 0 15px rgba(0,0,0,.6);
 }
-
 .balance{
-  font-size:40px;
-  margin:15px 0;
+  font-size:38px;
   color:#facc15;
+  margin:15px 0;
 }
-
-/* buttons */
 button{
   width:100%;
   padding:14px;
   margin:8px 0;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   font-size:16px;
   cursor:pointer;
 }
-
 .btn-gold{
   background:#facc15;
   color:black;
   font-weight:bold;
 }
-
 .btn-dark{
   background:#1e293b;
   color:white;
 }
+button:disabled{opacity:.6}
 
-button:disabled{
-  opacity:.6;
+#timer{
+  margin:10px 0;
+  font-size:18px;
 }
 
-/* menu bottom */
+/* bottom menu */
 .menu{
   position:fixed;
   bottom:0;
@@ -78,22 +79,15 @@ button:disabled{
   padding:10px 0;
   border-top:1px solid #1e293b;
 }
-
 .menu a{
   color:white;
   text-decoration:none;
-  font-size:14px;
+  font-size:13px;
   text-align:center;
 }
-
 .menu a span{
   display:block;
   font-size:22px;
-}
-
-#timer{
-  margin-top:10px;
-  font-size:18px;
 }
 </style>
 </head>
@@ -102,7 +96,7 @@ button:disabled{
 
 <div class="container">
   <h1>BTCUENE</h1>
-  <div id="userEmail" style="opacity:.8"></div>
+  <div id="userEmail"></div>
 
   <div class="card">
     <div>رصيدك الحالي (نقاط)</div>
@@ -118,69 +112,69 @@ button:disabled{
   </div>
 </div>
 
-<!-- menu -->
+<!-- القائمة السفلية -->
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
   <a href="ads.html"><span>🎬</span>إعلانات</a>
   <a href="wallet.html"><span>💼</span>محفظتي</a>
+  <a href="transactions.html"><span>📜</span>السجل</a>
   <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
 <script>
-let watching = false;
+let watching=false;
 
 /* تحميل بيانات المستخدم */
 async function loadUser(){
-  const { data:{ user } } = await supabase.auth.getUser();
+  const { data:{user} } = await supabase.auth.getUser();
   if(!user){
     location.href="login.html";
     return;
   }
 
-  document.getElementById("userEmail").innerText = user.email;
+  userEmail.innerText=user.email;
 
   const { data } = await supabase
     .from("profiles")
     .select("points")
-    .eq("user_id", user.id)
+    .eq("user_id",user.id)
     .single();
 
-  document.getElementById("points").innerText = data?.points || 0;
+  points.innerText = data?.points || 0;
 }
-
 loadUser();
 
-/* مشاهدة إعلان */
+/* زر مشاهدة إعلان */
 document.getElementById("watchAdBtn").onclick = watchAd;
 
 async function watchAd(){
   if(watching) return;
-  watching = true;
+  watching=true;
 
-  let seconds = 10;
-  const timer = document.getElementById("timer");
-  const btn = document.getElementById("watchAdBtn");
+  let seconds=10;
+  const timer=document.getElementById("timer");
+  const btn=document.getElementById("watchAdBtn");
 
-  btn.disabled = true;
-  timer.innerText = "⏳ " + seconds + " ثواني";
+  btn.disabled=true;
+  timer.innerText="⏳ "+seconds+" ثواني";
 
-  const interval = setInterval(async ()=>{
+  const interval=setInterval(async()=>{
     seconds--;
-    timer.innerText = "⏳ " + seconds + " ثواني";
+    timer.innerText="⏳ "+seconds+" ثواني";
 
-    if(seconds <= 0){
+    if(seconds<=0){
       clearInterval(interval);
-      timer.innerText = "✅ تم مشاهدة الإعلان";
-      btn.disabled = false;
-      watching = false;
+      timer.innerText="✅ تم مشاهدة الإعلان";
+      btn.disabled=false;
+      watching=false;
       await rewardUser();
     }
   },1000);
 }
 
-/* إضافة نقطة + سجل عملية */
+/* زيادة نقطة + تسجيل بالسجل */
 async function rewardUser(){
-  const { data:{ user } } = await supabase.auth.getUser();
+  const { data:{user} } = await supabase.auth.getUser();
 
   await supabase.rpc("increment_points",{
     uid:user.id,
