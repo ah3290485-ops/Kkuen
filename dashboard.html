@@ -3,50 +3,50 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard</title>
+  <title>لوحة التحكم</title>
 
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <style>
-    body {
-      background: #0f172a;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 80px;
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      background: gold;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-  </style>
+  <!-- Style -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <h2>لوحة التحكم</h2>
-  <p>مرحباً: <span id="user">...</span></p>
+  <div class="box">
+    <h2>لوحة التحكم</h2>
 
-  <br>
-  <button onclick="logout()">تسجيل الخروج</button>
+    <p class="small">مرحباً</p>
+    <h3 id="userEmail">...</h3>
+
+    <hr style="margin:20px 0; opacity:0.3">
+
+    <button onclick="go('charge.html')">💳 شحن</button>
+    <button onclick="go('ads.html')">📺 مشاهدة إعلان</button>
+    <button onclick="go('withdraw.html')">💸 سحب</button>
+
+    <hr style="margin:20px 0; opacity:0.3">
+
+    <button onclick="logout()">تسجيل الخروج</button>
+  </div>
 
   <script>
     async function loadUser() {
       const { data, error } = await supabase.auth.getUser();
 
       if (!data || !data.user) {
-        // إذا مو مسجّل دخول
         window.location.href = "login.html";
         return;
       }
 
-      document.getElementById("user").innerText = data.user.email;
+      document.getElementById("userEmail").innerText = data.user.email;
+    }
+
+    function go(page) {
+      alert("هذه الصفحة ستُفعّل لاحقاً");
+      // window.location.href = page;
     }
 
     async function logout() {
