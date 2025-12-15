@@ -1,90 +1,63 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
 <title>لوحة التحكم</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
 <script src="supabase.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Tahoma, Arial;
-  background:linear-gradient(135deg,#020617,#020617);
+body {
+  background:#020617;
   color:white;
+  font-family:Tahoma, Arial;
 }
 
-/* container */
-.container{
-  max-width:420px;
-  margin:auto;
-  padding:20px;
-  padding-bottom:130px;
-}
-
-/* header */
-.header{
+.container {
+  max-width:400px;
+  margin:40px auto;
   text-align:center;
-  margin-bottom:20px;
-}
-.header h1{
-  color:#facc15;
-  margin:0;
-}
-.header p{
-  opacity:.7;
-  margin-top:5px;
 }
 
-/* balance card */
-.balance-card{
+.card {
   background:#020617;
   border:1px solid #1e293b;
-  border-radius:18px;
-  padding:25px;
-  text-align:center;
+  padding:20px;
+  border-radius:10px;
   margin-bottom:20px;
 }
-.balance-card .label{
-  font-size:16px;
-  opacity:.8;
-}
-.balance-card .amount{
-  font-size:40px;
-  font-weight:bold;
-  margin-top:10px;
-  color:#22c55e;
-}
 
-/* action card */
-.action-card{
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:18px;
-  padding:20px;
-  margin-bottom:15px;
-}
-
-button{
+button, a.btn {
+  display:block;
   width:100%;
-  padding:16px;
+  margin:10px 0;
+  padding:12px;
   border:none;
-  border-radius:14px;
-  font-size:18px;
+  border-radius:8px;
+  font-size:16px;
+  text-decoration:none;
   cursor:pointer;
 }
 
-.btn-gold{
+.btn-gold {
   background:#facc15;
-  color:black;
-  font-weight:bold;
+  color:#000;
 }
 
-/* bottom menu */
-.menu{
+.btn-dark {
+  background:#1e293b;
+  color:white;
+}
+
+.balance {
+  font-size:22px;
+  margin-top:10px;
+}
+
+.menu {
   position:fixed;
   bottom:0;
   left:0;
@@ -92,18 +65,20 @@ button{
   background:#020617;
   display:flex;
   justify-content:space-around;
-  padding:12px 0;
+  padding:10px 0;
   border-top:1px solid #1e293b;
 }
-.menu a{
+
+.menu a {
   color:white;
   text-decoration:none;
   font-size:14px;
   text-align:center;
 }
-.menu a span{
+
+.menu a span {
   display:block;
-  font-size:24px;
+  font-size:22px;
 }
 </style>
 </head>
@@ -111,27 +86,27 @@ button{
 <body>
 
 <div class="container">
+  <h2>لوحة التحكم</h2>
 
-  <div class="header">
-    <h1>BTCUENE</h1>
-    <p>لوحة التحكم</p>
+  <div id="userEmail" style="opacity:.7;margin-bottom:10px"></div>
+
+  <div class="card">
+    <div>رصيدك الحالي</div>
+    <div class="balance" id="points">0</div>
+
+    <button class="btn-gold" onclick="watchAd()">🎬 مشاهدة إعلان (+3 نقاط)</button>
+
+    <!-- ✅ زر السحب بالمكان الصحيح -->
+    <a href="withdraw.html" class="btn-dark">💸 طلب سحب</a>
+
+    <a href="wallet.html" class="btn-dark">💼 محفظتي</a>
+    <a href="transactions.html" class="btn-dark">📜 سجل العمليات</a>
+
+    <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
   </div>
-
-  <div class="balance-card">
-    <div class="label">رصيدك الحالي</div>
-    <div class="amount">
-      <span id="points">0</span> نقطة
-    </div>
-  </div>
-
-  <div class="action-card">
-    <button class="btn-gold" onclick="watchAd()">
-      🎬 مشاهدة إعلان وكسب نقاط
-    </button>
-  </div>
-
 </div>
 
+<!-- القائمة السفلية -->
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
   <a href="ads.html"><span>🎬</span>إعلانات</a>
@@ -140,37 +115,24 @@ button{
 </div>
 
 <script>
-/* 🔒 حماية الصفحة */
-async function protectPage(){
-  const { data:{user} } = await supabase.auth.getUser();
-  if(!user){
-    window.location.href="login.html";
+async function loadUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    window.location.href = "login.html";
+    return;
   }
+  document.getElementById("userEmail").innerText = user.email;
 }
-protectPage();
+loadUser();
 
-/* تحميل الرصيد */
-async function loadBalance(){
-  const { data:{user} } = await supabase.auth.getUser();
-  if(!user) return;
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("points")
-    .eq("id", user.id)
-    .single();
-
-  if(data){
-    document.getElementById("points").innerText = data.points;
-  }
+function watchAd() {
+  alert("الإعلانات رح نفعّلها بعدين");
 }
 
-/* إعلان (مؤقت) */
-function watchAd(){
-  alert("سيتم تفعيل الإعلانات الحقيقية قريباً");
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
 }
-
-loadBalance();
 </script>
 
 </body>
