@@ -1,105 +1,102 @@
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة الأدمن</title>
+<meta charset="UTF-8">
+<title>لوحة الأدمن - السحوبات</title>
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
 
-  <!-- Style -->
-  <link rel="stylesheet" href="style.css">
+<style>
+body {
+  background:#020617;
+  color:white;
+  font-family:Tahoma;
+}
+
+.container {
+  max-width:500px;
+  margin:30px auto;
+}
+
+.card {
+  background:#020617;
+  border:1px solid #1e293b;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+.btn {
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  margin:5px;
+}
+
+.approve {
+  background:#16a34a;
+  color:white;
+}
+
+.reject {
+  background:#dc2626;
+  color:white;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="box" id="adminBox" style="display:none;">
-    <h2>لوحة الأدمن</h2>
-    <p class="small">إضافة / خصم نقاط المستخدمين</p>
+<div class="container">
+  <h2>طلبات السحب</h2>
+  <div id="list"></div>
+</div>
 
-    <input id="userEmail" type="email" placeholder="إيميل المستخدم">
-    <input id="points" type="number" placeholder="عدد النقاط">
+<script>
+async function loadWithdraws() {
+  const { data, error } = await supabase
+    .from("withdraws")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    <button onclick="addPoints()">➕ إضافة نقاط</button>
-    <button onclick="subtractPoints()">➖ خصم نقاط</button>
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-    <p class="small" id="msg"></p>
+  const list = document.getElementById("list");
+  list.innerHTML = "";
 
-    <a href="dashboard.html">⬅ رجوع</a>
-  </div>
+  data.forEach(w => {
+    list.innerHTML += `
+      <div class="card">
+        <div>💰 المبلغ: ${w.amount}</div>
+        <div>👛 المحفظة: ${w.wallet}</div>
+        <div>📌 الحالة: ${w.status}</div>
 
-  <script>
-    const ADMIN_EMAIL = "am.alsus1995@gmail.com";
+        ${w.status === "pending" ? `
+          <button class="btn approve" onclick="updateStatus('${w.id}','approved')">قبول</button>
+          <button class="btn reject" onclick="updateStatus('${w.id}','rejected')">رفض</button>
+        ` : ``}
+      </div>
+    `;
+  });
+}
 
-    async function checkAdmin() {
-      const { data } = await supabase.auth.getUser();
+async function updateStatus(id, status) {
+  await supabase
+    .from("withdraws")
+    .update({ status })
+    .eq("id", id);
 
-      if (!data || !data.user) {
-        window.location.href = "login.html";
-        return;
-      }
+  loadWithdraws();
+}
 
-      if (data.user.email !== ADMIN_EMAIL) {
-        alert("غير مصرح لك");
-        window.location.href = "dashboard.html";
-        return;
-      }
-
-      document.getElementById("adminBox").style.display = "block";
-    }
-
-    async function addPoints() {
-      await updatePoints(true);
-    }
-
-    async function subtractPoints() {
-      await updatePoints(false);
-    }
-
-    async function updatePoints(isAdd) {
-      const email = document.getElementById("userEmail").value.trim();
-      const pts = parseInt(document.getElementById("points").value);
-      const msg = document.getElementById("msg");
-
-      if (!email || !pts) {
-        msg.innerText = "يرجى إدخال الإيميل وعدد النقاط";
-        return;
-      }
-
-      // جلب المستخدم من جدول profiles
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("id, points")
-        .eq("email", email)
-        .single();
-
-      if (error || !profile) {
-        msg.innerText = "المستخدم غير موجود";
-        return;
-      }
-
-      let newPoints = isAdd
-        ? profile.points + pts
-        : profile.points - pts;
-
-      if (newPoints < 0) newPoints = 0;
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ points: newPoints })
-        .eq("email", email);
-
-      if (updateError) {
-        msg.innerText = "خطأ أثناء التحديث";
-      } else {
-        msg.innerText = "تم التحديث بنجاح ✅";
-      }
-    }
-
-    checkAdmin();
-  </script>
+loadWithdraws();
+</script>
 
 </body>
 </html>
