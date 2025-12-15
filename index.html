@@ -2,36 +2,25 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>BTCUEN</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
+<title>BTCUEN</title>
 
-  <!-- Style -->
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <div class="box">
-    <h1>BTCUEN</h1>
-    <p class="small">منصة استثمار وربح بالنقاط</p>
+<div class="home">
 
-    <a href="login.html">تسجيل الدخول</a>
-    <a href="register.html">إنشاء حساب</a>
-  </div>
+  <h1>BTCUEN</h1>
+  <p>منصة استثمار وربح من الإعلانات</p>
 
-  <script>
-    async function checkUser() {
-      const { data } = await supabase.auth.getUser();
-      if (data && data.user) {
-        window.location.href = "dashboard.html";
-      }
-    }
-    checkUser();
-  </script>
+  <a href="login.html" class="btn-main">تسجيل الدخول</a>
+  <a href="register.html" class="btn-second">إنشاء حساب</a>
+
+</div>
 
 </body>
 </html>
