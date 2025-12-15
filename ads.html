@@ -1,31 +1,164 @@
+
 <!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>مشاهدة إعلان</title>
+  <title>الإعلانات</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <script src="supabase.js"></script>
-  <link rel="stylesheet" href="style.css">
-</head>
 
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      padding: 20px;
+      padding-bottom: 90px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .card p {
+      font-size: 15px;
+      opacity: 0.85;
+      margin-bottom: 15px;
+    }
+
+    .reward {
+      font-size: 18px;
+      color: gold;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: gold;
+      color: black;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .disabled {
+      background: #334155;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* Bottom menu */
+    .menu {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #020617;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      border-top: 1px solid #1e293b;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .menu a span {
+      display: block;
+      font-size: 20px;
+    }
+  </style>
+</head>
 <body>
 
-  <div class="box">
-    <h2>مشاهدة إعلان</h2>
+  <div class="container">
+    <h1>🎬 الإعلانات</h1>
 
-    <p class="small">
-      شاهد الإعلان لتحصل على نقاط
-    </p>
+    <!-- إعلان 1 -->
+    <div class="card">
+      <h3>إعلان رقم 1</h3>
+      <p>شاهد الإعلان كاملاً لتحصل على نقاط</p>
+      <div class="reward">+3 نقاط</div>
+      <button onclick="watchAd()">▶️ مشاهدة الإعلان</button>
+    </div>
 
-    <button>▶️ بدء الإعلان</button>
+    <!-- إعلان 2 -->
+    <div class="card">
+      <h3>إعلان رقم 2</h3>
+      <p>شاهد الإعلان كاملاً لتحصل على نقاط</p>
+      <div class="reward">+3 نقاط</div>
+      <button class="disabled">🔒 سيتم فتحه لاحقاً</button>
+    </div>
 
-    <p class="small" style="margin-top:15px;">
-      سيتم ربط الإعلانات لاحقاً
-    </p>
-
-    <a href="dashboard.html">⬅ رجوع</a>
   </div>
+
+  <!-- Bottom Navigation -->
+  <div class="menu">
+    <a href="dashboard.html">
+      <span>🏠</span>
+      الرئيسية
+    </a>
+
+    <a href="account.html">
+      <span>👤</span>
+      حسابي
+    </a>
+
+    <a href="ads.html">
+      <span>🎬</span>
+      الإعلانات
+    </a>
+
+    <a href="#" onclick="logout()">
+      <span>🚪</span>
+      خروج
+    </a>
+  </div>
+
+  <script>
+    async function watchAd() {
+      alert("🎬 سيتم تشغيل الإعلان الحقيقي لاحقاً");
+      // لاحقاً:
+      // 1. تشغيل فيديو الإعلان
+      // 2. انتظار انتهاءه
+      // 3. إضافة نقاط للمستخدم
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    }
+  </script>
 
 </body>
 </html>
