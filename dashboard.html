@@ -2,174 +2,159 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>لوحة التحكم</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>لوحة التحكم</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <script src="supabase.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #020617, #0f172a);
-      color: white;
-      min-height: 100vh;
-    }
-
-    .container {
-      padding: 20px;
-      padding-bottom: 100px;
-    }
-
-    h1 {
-      font-size: 28px;
-      color: gold;
-      margin-bottom: 5px;
-    }
-
-    .email {
-      opacity: 0.8;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: #020617;
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .balance {
-      font-size: 32px;
-      font-weight: bold;
-      color: gold;
-      margin-top: 10px;
-    }
-
-    button {
-      width: 100%;
-      padding: 16px;
-      border-radius: 14px;
-      border: none;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 12px;
-      cursor: pointer;
-    }
-
-    .btn-gold {
-      background: gold;
-      color: black;
-    }
-
-    .btn-dark {
-      background: #1e293b;
-      color: white;
-    }
-
-    /* Bottom menu */
-    .menu {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #020617;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      border-top: 1px solid #1e293b;
-    }
-
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .menu a span {
-      display: block;
-      font-size: 22px;
-    }
-  </style>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+.container{
+  padding:20px;
+  padding-bottom:110px;
+}
+h1{color:gold}
+.card{
+  background:#020617;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:20px;
+}
+.balance{
+  font-size:32px;
+  color:gold;
+  font-weight:bold;
+}
+button{
+  width:100%;
+  padding:16px;
+  font-size:18px;
+  border-radius:14px;
+  border:none;
+  font-weight:bold;
+  margin-bottom:12px;
+}
+.btn-gold{background:gold;color:black}
+.btn-dark{background:#1e293b;color:white}
+.menu{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#020617;
+  display:flex;justify-content:space-around;
+  padding:10px 0;border-top:1px solid #1e293b;
+}
+.menu a{color:white;text-decoration:none;text-align:center;font-size:14px}
+.menu a span{display:block;font-size:22px}
+#timer{font-size:18px;text-align:center;margin-bottom:10px}
+</style>
 </head>
 
 <body>
 
-  <div class="container">
-    <h1>BTCUENE</h1>
-    <div class="email" id="userEmail">...</div>
+<div class="container">
+  <h1>BTCUENE</h1>
+  <div id="userEmail" style="opacity:.8;margin-bottom:10px"></div>
 
-    <div class="card">
-      <div>رصيدك الحالي (نقاط)</div>
-      <div class="balance" id="points">0</div>
-    </div>
-
-    <button class="btn-gold" onclick="alert('سيتم تفعيل الإعلانات لاحقاً')">
-      🎬 مشاهدة إعلان
-    </button>
-
-    <button class="btn-dark" onclick="logout()">
-      🚪 تسجيل الخروج
-    </button>
+  <div class="card">
+    <div>رصيدك الحالي (نقاط)</div>
+    <div class="balance" id="points">0</div>
   </div>
 
-  <!-- Bottom Navigation -->
-  <div class="menu">
-    <a href="dashboard.html">
-      <span>🏠</span>
-      الرئيسية
-    </a>
+  <div id="timer"></div>
 
-    <a href="account.html">
-      <span>👤</span>
-      حسابي
-    </a>
+  <button class="btn-gold" id="adBtn" onclick="startAd()">
+    🎬 مشاهدة إعلان (+3 نقاط)
+  </button>
 
-    <a href="ads.html">
-      <span>🎬</span>
-      الإعلانات
-    </a>
+  <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
+</div>
 
-    <a href="wallet.html">
-      <span>💼</span>
-      محفظتي
-    </a>
-  </div>
+<div class="menu">
+  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
+  <a href="ads.html"><span>🎬</span>إعلانات</a>
+  <a href="wallet.html"><span>💼</span>محفظتي</a>
+  <a href="account.html"><span>👤</span>حسابي</a>
+</div>
 
-  <script>
-    async function loadDashboard() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+<script>
+let user;
+let seconds = 10; // مدة الإعلان
+let reward = 3;   // النقاط
 
-      // عرض الإيميل
-      document.getElementById("userEmail").innerText = user.email;
+async function loadDashboard(){
+  const res = await supabase.auth.getUser();
+  user = res.data.user;
+  if(!user){ location.href="login.html"; return; }
 
-      // جلب النقاط
-      const { data } = await supabase
-        .from("profiles")
-        .select("points")
-        .eq("user_id", user.id)
-        .single();
+  userEmail.innerText = user.email;
 
-      if (data) {
-        document.getElementById("points").innerText = data.points;
-      }
+  const { data } = await supabase
+    .from("profiles")
+    .select("points")
+    .eq("user_id", user.id)
+    .single();
+
+  if(data) points.innerText = data.points;
+}
+
+function startAd(){
+  adBtn.disabled = true;
+  let time = seconds;
+  timer.innerText = `⏳ الإعلان ينتهي خلال ${time} ثواني`;
+
+  let interval = setInterval(async ()=>{
+    time--;
+    timer.innerText = `⏳ الإعلان ينتهي خلال ${time} ثواني`;
+
+    if(time <= 0){
+      clearInterval(interval);
+      timer.innerText = "✅ تم مشاهدة الإعلان";
+      await rewardUser();
+      adBtn.disabled = false;
     }
+  },1000);
+}
 
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    }
+async function rewardUser(){
+  // زيادة النقاط
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("points")
+    .eq("user_id", user.id)
+    .single();
 
-    loadDashboard();
-  </script>
+  let newPoints = profile.points + reward;
+
+  await supabase
+    .from("profiles")
+    .update({ points: newPoints })
+    .eq("user_id", user.id);
+
+  // تسجيل العملية
+  await supabase
+    .from("transactions")
+    .insert({
+      user_id: user.id,
+      type: "ad",
+      amount: reward
+    });
+
+  points.innerText = newPoints;
+}
+
+async function logout(){
+  await supabase.auth.signOut();
+  location.href="login.html";
+}
+
+loadDashboard();
+</script>
 
 </body>
 </html>
