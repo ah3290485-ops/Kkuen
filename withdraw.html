@@ -5,17 +5,12 @@
   <title>طلب سحب</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="mobile.css">
 
-  <style>
-    .note {
-      font-size: 14px;
-      opacity: .8;
-      margin-top: 10px;
-      text-align: center;
-    }
-  </style>
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -25,7 +20,8 @@
 
   <div class="card">
     <input type="number" id="amount" placeholder="المبلغ" min="1">
-    <input type="text" id="wallet" placeholder="عنوان المحفظة">
+    <input type="text" id="wallet" placeholder="عنوان المحفظة (USDT)">
+
     <button class="btn-gold" onclick="submitWithdraw()">إرسال الطلب</button>
   </div>
 
@@ -38,12 +34,12 @@
 
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="wallet.html"><span>💰</span>محفظتي</a>
+  <a href="wallet.html"><span>💼</span>محفظتي</a>
   <a href="transactions.html"><span>📜</span>السجل</a>
+  <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
 <script src="supabase.js"></script>
-
 <script>
 async function submitWithdraw() {
   const amount = document.getElementById("amount").value;
@@ -62,18 +58,16 @@ async function submitWithdraw() {
 
   const { error } = await supabase
     .from("withdrawals")
-    .insert([
-      {
-        user_id: user.id,
-        amount: amount,
-        wallet: wallet
-      }
-    ]);
+    .insert([{
+      user_id: user.id,
+      amount: amount,
+      wallet: wallet
+    }]);
 
   if (error) {
-    alert("حدث خطأ");
+    alert("❌ حدث خطأ أثناء إرسال الطلب");
   } else {
-    alert("تم إرسال طلب السحب بنجاح");
+    alert("✅ تم إرسال طلب السحب بنجاح");
     location.href = "dashboard.html";
   }
 }
