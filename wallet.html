@@ -1,161 +1,61 @@
-
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>محفظتي</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>محفظتي</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase.js"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="mobile.css">
 
-<style>
-body{
-  margin:0;
-  font-family:Tahoma, Arial;
-  background:#020617;
-  color:white;
-}
-
-.container{
-  max-width:420px;
-  margin:auto;
-  padding:20px;
-  padding-bottom:120px;
-}
-
-h1{
-  text-align:center;
-  color:#facc15;
-  margin-bottom:20px;
-}
-
-.card{
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:15px;
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:10px;
-  font-size:16px;
-}
-
-.value{
-  font-weight:bold;
-  color:#22c55e;
-}
-
-.notice{
-  font-size:14px;
-  opacity:.7;
-  line-height:1.6;
-}
-
-input{
-  width:100%;
-  padding:12px;
-  border-radius:8px;
-  border:none;
-  margin-top:10px;
-  font-size:16px;
-}
-
-button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:10px;
-  font-size:16px;
-  cursor:pointer;
-  margin-top:10px;
-}
-
-.btn-gold{
-  background:#facc15;
-  color:black;
-  font-weight:bold;
-}
-
-.menu{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#020617;
-  display:flex;
-  justify-content:space-around;
-  padding:10px 0;
-  border-top:1px solid #1e293b;
-}
-
-.menu a{
-  color:white;
-  text-decoration:none;
-  font-size:14px;
-  text-align:center;
-}
-
-.menu a span{
-  display:block;
-  font-size:22px;
-}
-</style>
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
 <div class="container">
   <h1>💼 محفظتي</h1>
+  <div id="userEmail" style="opacity:.7;margin-bottom:10px"></div>
 
   <div class="card">
-    <div class="row">
-      <div>رصيد النقاط</div>
-      <div class="value"><span id="points">0</span> نقطة</div>
+    <div style="text-align:center;">الرصيد الحالي</div>
+    <div class="balance" id="points">0</div>
+  </div>
+
+  <div class="card">
+    <p>عملة السحب:</p>
+    <strong>USDT (TRC20)</strong>
+    <p style="margin-top:10px;">عنوان السحب الافتراضي:</p>
+    <div class="address">
+      TPNoGerv1EMBSdrs9Yca93eCQUVsoNiRvq
     </div>
   </div>
 
-  <div class="card">
-    <div class="notice">
-      💡 حالياً السحب غير مفعّل.<br>
-      سيتم تفعيل طلبات السحب لاحقاً بعد ربط وسائل الدفع.
-    </div>
-  </div>
+  <button class="btn-gold" onclick="location.href='deposit.html'">➕ شحن الرصيد</button>
+  <button class="btn-gold" onclick="location.href='withdraw.html'">💸 طلب سحب</button>
 
-  <div class="card">
-    <input type="text" placeholder="عنوان المحفظة (USDT)" disabled>
-    <button class="btn-gold" disabled>
-      🚫 السحب غير متاح حالياً
-    </button>
-  </div>
+  <button class="btn-dark" onclick="location.href='dashboard.html'">⬅️ رجوع</button>
 </div>
 
 <div class="menu">
   <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="ads.html"><span>🎬</span>إعلانات</a>
-  <a href="wallet.html"><span>💼</span>محفظتي</a>
+  <a href="deposit.html"><span>➕</span>شحن</a>
+  <a href="withdraw.html"><span>💸</span>سحب</a>
   <a href="account.html"><span>👤</span>حسابي</a>
 </div>
 
+<script src="supabase.js"></script>
 <script>
-/* 🔒 حماية الصفحة */
-async function protectPage(){
-  const { data:{user} } = await supabase.auth.getUser();
-  if(!user){
-    window.location.href="login.html";
+async function loadWallet() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    location.href = "login.html";
+    return;
   }
-}
-protectPage();
 
-/* تحميل الرصيد */
-async function loadBalance(){
-  const { data:{user} } = await supabase.auth.getUser();
-  if(!user) return;
+  document.getElementById("userEmail").innerText = user.email;
 
   const { data } = await supabase
     .from("profiles")
@@ -163,12 +63,12 @@ async function loadBalance(){
     .eq("id", user.id)
     .single();
 
-  if(data){
+  if (data) {
     document.getElementById("points").innerText = data.points;
   }
 }
 
-loadBalance();
+loadWallet();
 </script>
 
 </body>
