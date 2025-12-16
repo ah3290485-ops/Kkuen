@@ -1,101 +1,121 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>لوحة الأدمن - السحوبات</title>
+  <meta charset="UTF-8">
+  <title>لوحة الأدمن</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
-<script src="supabase.js"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="mobile.css">
 
-<style>
-body {
-  background:#020617;
-  color:white;
-  font-family:Tahoma;
-}
+  <!-- Supabase -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-.container {
-  max-width:500px;
-  margin:30px auto;
-}
-
-.card {
-  background:#020617;
-  border:1px solid #1e293b;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:15px;
-}
-
-.btn {
-  padding:8px 12px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  margin:5px;
-}
-
-.approve {
-  background:#16a34a;
-  color:white;
-}
-
-.reject {
-  background:#dc2626;
-  color:white;
-}
-</style>
+  <style>
+    .status-pending { color: orange; }
+    .status-approved { color: #22c55e; }
+    .status-rejected { color: #ef4444; }
+    .actions button {
+      margin: 5px;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>طلبات السحب</h2>
-  <div id="list"></div>
+  <h1>🛠️ لوحة الأدمن</h1>
+  <div id="adminEmail" style="opacity:.7;margin-bottom:10px"></div>
+
+  <div id="withdrawList"></div>
+
+  <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
 </div>
 
+<script src="supabase.js"></script>
 <script>
-async function loadWithdraws() {
+/* 🔐 ضع إيميل الأدمن فقط */
+const ADMIN_EMAIL = "am.alsus1995@gmail.com";
+
+async function checkAdmin() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.email !== ADMIN_EMAIL) {
+    alert("غير مصرح لك بالدخول");
+    location.href = "dashboard.html";
+    return;
+  }
+  document.getElementById("adminEmail").innerText = user.email;
+}
+
+async function loadWithdrawals() {
   const { data, error } = await supabase
-    .from("withdraws")
+    .from("withdrawals")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (error) {
-    alert(error.message);
+    alert("خطأ بتحميل البيانات");
     return;
   }
 
-  const list = document.getElementById("list");
+  const list = document.getElementById("withdrawList");
   list.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    list.innerHTML = "<p>لا يوجد طلبات سحب</p>";
+    return;
+  }
 
   data.forEach(w => {
     list.innerHTML += `
       <div class="card">
-        <div>💰 المبلغ: ${w.amount}</div>
-        <div>👛 المحفظة: ${w.wallet}</div>
-        <div>📌 الحالة: ${w.status}</div>
+        <p><strong>المستخدم:</strong> ${w.user_id}</p>
+        <p><strong>المبلغ:</strong> ${w.amount}</p>
+        <p><strong>المحفظة:</strong> ${w.wallet}</p>
+        <p>
+          <strong>الحالة:</strong>
+          <span class="status-${w.status}">${w.status}</span>
+        </p>
 
-        ${w.status === "pending" ? `
-          <button class="btn approve" onclick="updateStatus('${w.id}','approved')">قبول</button>
-          <button class="btn reject" onclick="updateStatus('${w.id}','rejected')">رفض</button>
-        ` : ``}
+        ${
+          w.status === "pending"
+          ? `
+            <div class="actions">
+              <button class="btn-gold" onclick="updateStatus('${w.id}','approved')">✔️ قبول</button>
+              <button class="btn-dark" onclick="updateStatus('${w.id}','rejected')">❌ رفض</button>
+            </div>
+          `
+          : ""
+        }
       </div>
     `;
   });
 }
 
 async function updateStatus(id, status) {
-  await supabase
-    .from("withdraws")
-    .update({ status })
+  const confirmAction = confirm("هل أنت متأكد؟");
+  if (!confirmAction) return;
+
+  const { error } = await supabase
+    .from("withdrawals")
+    .update({ status: status })
     .eq("id", id);
 
-  loadWithdraws();
+  if (error) {
+    alert("حدث خطأ");
+  } else {
+    loadWithdrawals();
+  }
 }
 
-loadWithdraws();
+async function logout() {
+  await supabase.auth.signOut();
+  location.href = "login.html";
+}
+
+checkAdmin();
+loadWithdrawals();
 </script>
 
 </body>
