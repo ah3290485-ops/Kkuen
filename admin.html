@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <title>لوحة تحكم الأدمن</title>
@@ -9,168 +9,160 @@
   <link rel="stylesheet" href="mobile.css">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
 
   <style>
     body {
-      background:#0b0f1a;
-      color:#fff;
-      font-family: Tahoma, Arial;
+      background: #0b0f1a;
+      color: #fff;
+      font-family: sans-serif;
     }
-    h1 {
-      text-align:center;
-      color:gold;
-      margin:20px 0;
+    h1,h2 {
+      color: gold;
+      text-align: center;
     }
     table {
-      width:100%;
-      border-collapse:collapse;
-      background:#12182a;
-      border-radius:12px;
-      overflow:hidden;
-      font-size:14px;
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
     }
     th, td {
-      padding:12px;
-      text-align:center;
-      border-bottom:1px solid #333;
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
     }
     th {
-      color:gold;
-      background:#0e1325;
-    }
-    tr:last-child td {
-      border-bottom:none;
+      background: #111;
+      color: gold;
     }
     button {
-      padding:8px 12px;
-      border:none;
-      border-radius:8px;
-      font-size:14px;
-      cursor:pointer;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
     }
     .approve {
-      background:#16a34a;
-      color:#fff;
+      background: green;
+      color: #fff;
     }
     .reject {
-      background:#dc2626;
-      color:#fff;
-    }
-    .container {
-      padding:15px;
-      max-width:100%;
+      background: red;
+      color: #fff;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>لوحة تحكم الأدمن</h1>
+<h1>لوحة تحكم الأدمن</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>المستخدم</th>
-        <th>المبلغ</th>
-        <th>TXID</th>
-        <th>الحالة</th>
-        <th>إجراء</th>
-      </tr>
-    </thead>
-    <tbody id="depositsTable">
-      <tr>
-        <td colspan="5">جاري التحميل...</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<!-- حماية الأدمن -->
+<script>
+supabase.auth.getUser().then(({ data }) => {
+  if (!data.user || data.user.email !== "am.alsus1995@gmail.com") {
+    alert("دخول مرفوض");
+    window.location.href = "login.html";
+  }
+});
+</script>
+
+<!-- طلبات الشحن -->
+<h2>طلبات الشحن</h2>
+<table>
+  <thead>
+    <tr>
+      <th>المستخدم</th>
+      <th>المبلغ</th>
+      <th>TXID</th>
+      <th>الحالة</th>
+      <th>إجراء</th>
+    </tr>
+  </thead>
+  <tbody id="deposits"></tbody>
+</table>
+
+<!-- طلبات السحب -->
+<h2>طلبات السحب</h2>
+<table>
+  <thead>
+    <tr>
+      <th>المستخدم</th>
+      <th>المبلغ</th>
+      <th>المحفظة</th>
+      <th>الحالة</th>
+      <th>إجراء</th>
+    </tr>
+  </thead>
+  <tbody id="withdrawals"></tbody>
+</table>
 
 <script>
-  // 🔹 بيانات Supabase (جاهزة عندك)
-  const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
+// جلب طلبات الشحن
+async function loadDeposits() {
+  const { data } = await supabase
+    .from("deposits")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  const supabase = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+  const box = document.getElementById("deposits");
+  box.innerHTML = "";
 
-  // 🔹 تحميل طلبات الشحن
-  async function loadDeposits() {
-    const { data, error } = await supabase
-      .from("deposits")
-      .select(`
-        id,
-        user_id,
-        amount,
-        txid,
-        status,
-        created_at,
-        profiles(email)
-      `)
-      .order("created_at", { ascending: false });
+  data.forEach(d => {
+    box.innerHTML += `
+      <tr>
+        <td>${d.user_id}</td>
+        <td>${d.amount}</td>
+        <td>${d.txid || "-"}</td>
+        <td>${d.status}</td>
+        <td>
+          <button class="approve" onclick="updateDeposit('${d.id}','approved')">موافقة</button>
+          <button class="reject" onclick="updateDeposit('${d.id}','rejected')">رفض</button>
+        </td>
+      </tr>
+    `;
+  });
+}
 
-    const table = document.getElementById("depositsTable");
-    table.innerHTML = "";
+// جلب طلبات السحب
+async function loadWithdrawals() {
+  const { data } = await supabase
+    .from("withdrawals")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    if (error) {
-      table.innerHTML = `<tr><td colspan="5">خطأ في جلب البيانات</td></tr>`;
-      console.error(error);
-      return;
-    }
+  const box = document.getElementById("withdrawals");
+  box.innerHTML = "";
 
-    if (!data || data.length === 0) {
-      table.innerHTML = `<tr><td colspan="5">لا يوجد طلبات</td></tr>`;
-      return;
-    }
+  data.forEach(w => {
+    box.innerHTML += `
+      <tr>
+        <td>${w.user_id}</td>
+        <td>${w.amount}</td>
+        <td>${w.wallet}</td>
+        <td>${w.status}</td>
+        <td>
+          <button class="approve" onclick="updateWithdrawal('${w.id}','approved')">موافقة</button>
+          <button class="reject" onclick="updateWithdrawal('${w.id}','rejected')">رفض</button>
+        </td>
+      </tr>
+    `;
+  });
+}
 
-    data.forEach(d => {
-      table.innerHTML += `
-        <tr>
-          <td>${d.profiles?.email || "-"}</td>
-          <td>${d.amount}</td>
-          <td>${d.txid || "-"}</td>
-          <td>${d.status}</td>
-          <td>
-            ${
-              d.status === "pending"
-              ? `
-                <button class="approve" onclick="approveDeposit('${d.id}')">✔ موافقة</button>
-                <button class="reject" onclick="rejectDeposit('${d.id}')">✖ رفض</button>
-              `
-              : "تم"
-            }
-          </td>
-        </tr>
-      `;
-    });
-  }
-
-  // 🔹 موافقة على الشحن
-  async function approveDeposit(id) {
-    await supabase
-      .from("deposits")
-      .update({ status: "approved" })
-      .eq("id", id);
-
-    loadDeposits();
-    alert("تمت الموافقة على الشحن");
-  }
-
-  // 🔹 رفض الشحن
-  async function rejectDeposit(id) {
-    await supabase
-      .from("deposits")
-      .update({ status: "rejected" })
-      .eq("id", id);
-
-    loadDeposits();
-    alert("تم رفض الشحن");
-  }
-
-  // تشغيل عند فتح الصفحة
+// تحديث حالة الشحن
+async function updateDeposit(id, status) {
+  await supabase.from("deposits").update({ status }).eq("id", id);
   loadDeposits();
+}
+
+// تحديث حالة السحب
+async function updateWithdrawal(id, status) {
+  await supabase.from("withdrawals").update({ status }).eq("id", id);
+  loadWithdrawals();
+}
+
+loadDeposits();
+loadWithdrawals();
 </script>
 
 </body>
