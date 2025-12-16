@@ -1,176 +1,84 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
   <meta charset="UTF-8">
   <title>حسابي</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="mobile.css">
+
   <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Tahoma, Arial;
-      background: linear-gradient(135deg, #020617, #020617);
-      color: white;
-    }
-
-    .container {
-      max-width: 420px;
-      margin: auto;
-      padding: 20px;
-      padding-bottom: 120px;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #facc15;
-    }
-
-    .card {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 15px;
-    }
-
-    .label {
-      font-size: 14px;
-      opacity: 0.7;
-    }
-
-    .value {
-      font-size: 16px;
-      margin-bottom: 10px;
-      word-break: break-all;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      margin-top: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .btn-gold {
-      background: #facc15;
-      color: black;
-      font-weight: bold;
-    }
-
-    .btn-dark {
-      background: #1e293b;
-      color: white;
-    }
-
-    /* Bottom menu */
-    .menu {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #020617;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      border-top: 1px solid #1e293b;
-    }
-
-    .menu a {
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .menu a span {
-      display: block;
-      font-size: 22px;
-    }
-  </style>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
-  <div class="container">
-    <h1>👤 حسابي</h1>
+<div class="container">
+  <h1>👤 حسابي</h1>
 
-    <div class="card">
-      <div class="label">البريد الإلكتروني</div>
-      <div class="value" id="email">...</div>
+  <div class="card">
+    <p><strong>البريد الإلكتروني:</strong></p>
+    <div id="userEmail" style="margin-bottom:15px;opacity:.8"></div>
 
-      <div class="label">رقم الحساب</div>
-      <div class="value" id="userId">...</div>
-    </div>
+    <p><strong>تغيير كلمة المرور</strong></p>
+    <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة">
 
-    <div class="card">
-      <div class="label">تغيير كلمة المرور</div>
-      <input type="password" id="newPassword" placeholder="كلمة مرور جديدة">
-      <button class="btn-gold" onclick="changePassword()">تحديث كلمة المرور</button>
-    </div>
-
-    <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
+    <button class="btn-gold" onclick="changePassword()">🔒 تحديث كلمة المرور</button>
   </div>
 
-  <!-- Bottom Navigation -->
-  <div class="menu">
-    <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-    <a href="ads.html"><span>🎬</span>إعلانات</a>
-    <a href="wallet.html"><span>💼</span>محفظتي</a>
-    <a href="account.html"><span>👤</span>حسابي</a>
+  <div class="card">
+    <p><strong>معلومات الحساب</strong></p>
+    <p>رقم الحساب:</p>
+    <div id="userId" class="address"></div>
   </div>
 
-  <script>
-    async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
+  <button class="btn-dark" onclick="location.href='dashboard.html'">⬅️ رجوع</button>
+</div>
 
-      document.getElementById("email").innerText = user.email;
-      document.getElementById("userId").innerText = user.id;
-    }
+<div class="menu">
+  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
+  <a href="wallet.html"><span>💼</span>محفظتي</a>
+  <a href="transactions.html"><span>📜</span>السجل</a>
+  <a href="withdraw.html"><span>💸</span>سحب</a>
+</div>
 
-    async function changePassword() {
-      const password = document.getElementById("newPassword").value;
-      if (password.length < 6) {
-        alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-        return;
-      }
+<script src="supabase.js"></script>
+<script>
+async function loadAccount() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    location.href = "login.html";
+    return;
+  }
 
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) {
-        alert(error.message);
-      } else {
-        alert("تم تحديث كلمة المرور بنجاح");
-        document.getElementById("newPassword").value = "";
-      }
-    }
+  document.getElementById("userEmail").innerText = user.email;
+  document.getElementById("userId").innerText = user.id;
+}
 
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    }
+async function changePassword() {
+  const newPassword = document.getElementById("newPassword").value;
 
-    loadUser();
-  </script>
+  if (!newPassword || newPassword.length < 6) {
+    alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+    return;
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+
+  if (error) {
+    alert("❌ حدث خطأ أثناء التحديث");
+  } else {
+    alert("✅ تم تغيير كلمة المرور بنجاح");
+    document.getElementById("newPassword").value = "";
+  }
+}
+
+loadAccount();
+</script>
 
 </body>
 </html>
