@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -13,48 +12,53 @@
 
   <style>
     body {
-      background: #0b0f1a;
-      color: #fff;
+      background:#0b0f1a;
+      color:#fff;
       font-family: Tahoma, Arial;
     }
-    h1, h2 {
-      color: gold;
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    .card {
-      background: #12182a;
-      padding: 20px;
-      border-radius: 16px;
-      margin-bottom: 30px;
+    h1 {
+      text-align:center;
+      color:gold;
+      margin:20px 0;
     }
     table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
+      width:100%;
+      border-collapse:collapse;
+      background:#12182a;
+      border-radius:12px;
+      overflow:hidden;
+      font-size:14px;
     }
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid #333;
-      text-align: center;
+      padding:12px;
+      text-align:center;
+      border-bottom:1px solid #333;
     }
     th {
-      color: gold;
+      color:gold;
+      background:#0e1325;
+    }
+    tr:last-child td {
+      border-bottom:none;
     }
     button {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
+      padding:8px 12px;
+      border:none;
+      border-radius:8px;
+      font-size:14px;
+      cursor:pointer;
     }
     .approve {
-      background: #16a34a;
-      color: #fff;
+      background:#16a34a;
+      color:#fff;
     }
     .reject {
-      background: #dc2626;
-      color: #fff;
+      background:#dc2626;
+      color:#fff;
+    }
+    .container {
+      padding:15px;
+      max-width:100%;
     }
   </style>
 </head>
@@ -62,126 +66,111 @@
 <body>
 
 <div class="container">
-
   <h1>لوحة تحكم الأدمن</h1>
 
-  <!-- طلبات الشحن -->
-  <div class="card">
-    <h2>طلبات الشحن</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>المستخدم</th>
-          <th>المبلغ</th>
-          <th>TXID</th>
-          <th>الحالة</th>
-          <th>إجراء</th>
-        </tr>
-      </thead>
-      <tbody id="depositsTable"></tbody>
-    </table>
-  </div>
-
-  <!-- طلبات السحب -->
-  <div class="card">
-    <h2>طلبات السحب</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>المستخدم</th>
-          <th>المبلغ</th>
-          <th>المحفظة</th>
-          <th>الحالة</th>
-          <th>إجراء</th>
-        </tr>
-      </thead>
-      <tbody id="withdrawalsTable"></tbody>
-    </table>
-  </div>
-
+  <table>
+    <thead>
+      <tr>
+        <th>المستخدم</th>
+        <th>المبلغ</th>
+        <th>TXID</th>
+        <th>الحالة</th>
+        <th>إجراء</th>
+      </tr>
+    </thead>
+    <tbody id="depositsTable">
+      <tr>
+        <td colspan="5">جاري التحميل...</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <script>
+  // 🔹 بيانات Supabase (جاهزة عندك)
   const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
 
   const supabase = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_ANON_KEY
+    SUPABASE_KEY
   );
 
-  // جلب طلبات الشحن
+  // 🔹 تحميل طلبات الشحن
   async function loadDeposits() {
     const { data, error } = await supabase
       .from("deposits")
-      .select("*")
+      .select(`
+        id,
+        user_id,
+        amount,
+        txid,
+        status,
+        created_at,
+        profiles(email)
+      `)
       .order("created_at", { ascending: false });
 
     const table = document.getElementById("depositsTable");
     table.innerHTML = "";
 
-    if (data) {
-      data.forEach(d => {
-        table.innerHTML += `
-          <tr>
-            <td>${d.user_id}</td>
-            <td>${d.amount}</td>
-            <td>${d.txid || "-"}</td>
-            <td>${d.status}</td>
-            <td>
-              <button class="approve" onclick="updateDeposit('${d.id}','approved')">✔</button>
-              <button class="reject" onclick="updateDeposit('${d.id}','rejected')">✖</button>
-            </td>
-          </tr>
-        `;
-      });
+    if (error) {
+      table.innerHTML = `<tr><td colspan="5">خطأ في جلب البيانات</td></tr>`;
+      console.error(error);
+      return;
     }
+
+    if (!data || data.length === 0) {
+      table.innerHTML = `<tr><td colspan="5">لا يوجد طلبات</td></tr>`;
+      return;
+    }
+
+    data.forEach(d => {
+      table.innerHTML += `
+        <tr>
+          <td>${d.profiles?.email || "-"}</td>
+          <td>${d.amount}</td>
+          <td>${d.txid || "-"}</td>
+          <td>${d.status}</td>
+          <td>
+            ${
+              d.status === "pending"
+              ? `
+                <button class="approve" onclick="approveDeposit('${d.id}')">✔ موافقة</button>
+                <button class="reject" onclick="rejectDeposit('${d.id}')">✖ رفض</button>
+              `
+              : "تم"
+            }
+          </td>
+        </tr>
+      `;
+    });
   }
 
-  async function updateDeposit(id, status) {
-    await supabase.from("deposits")
-      .update({ status })
+  // 🔹 موافقة على الشحن
+  async function approveDeposit(id) {
+    await supabase
+      .from("deposits")
+      .update({ status: "approved" })
       .eq("id", id);
+
     loadDeposits();
+    alert("تمت الموافقة على الشحن");
   }
 
-  // جلب طلبات السحب
-  async function loadWithdrawals() {
-    const { data, error } = await supabase
-      .from("withdrawals")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    const table = document.getElementById("withdrawalsTable");
-    table.innerHTML = "";
-
-    if (data) {
-      data.forEach(w => {
-        table.innerHTML += `
-          <tr>
-            <td>${w.user_id}</td>
-            <td>${w.amount}</td>
-            <td>${w.wallet}</td>
-            <td>${w.status}</td>
-            <td>
-              <button class="approve" onclick="updateWithdrawal('${w.id}','approved')">✔</button>
-              <button class="reject" onclick="updateWithdrawal('${w.id}','rejected')">✖</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-  }
-
-  async function updateWithdrawal(id, status) {
-    await supabase.from("withdrawals")
-      .update({ status })
+  // 🔹 رفض الشحن
+  async function rejectDeposit(id) {
+    await supabase
+      .from("deposits")
+      .update({ status: "rejected" })
       .eq("id", id);
-    loadWithdrawals();
+
+    loadDeposits();
+    alert("تم رفض الشحن");
   }
 
+  // تشغيل عند فتح الصفحة
   loadDeposits();
-  loadWithdrawals();
 </script>
 
 </body>
