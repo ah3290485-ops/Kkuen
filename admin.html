@@ -1,121 +1,266 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>لوحة الأدمن</title>
+  <title>لوحة التحكم | BTCUEN</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
+  <!-- ستايل أساسي -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
   <style>
-    .status-pending { color: orange; }
-    .status-approved { color: #22c55e; }
-    .status-rejected { color: #ef4444; }
-    .actions button {
-      margin: 5px;
+    body {
+      background: linear-gradient(135deg, #020617, #020617);
+      color: #fff;
+      font-family: Tahoma, Arial;
+    }
+    h1 {
+      color: gold;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .section {
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #1e293b;
+      text-align: center;
+    }
+    th {
+      color: gold;
+    }
+    button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .approve { background: #16a34a; color: #fff; }
+    .reject { background: #dc2626; color: #fff; }
+    .logout {
+      background: #334155;
+      color: #fff;
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 14px;
     }
   </style>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>🛠️ لوحة الأدمن</h1>
-  <div id="adminEmail" style="opacity:.7;margin-bottom:10px"></div>
 
-  <div id="withdrawList"></div>
+  <h1>لوحة تحكم الأدمن</h1>
 
-  <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
+  <!-- طلبات الشحن -->
+  <div class="section">
+    <h2>طلبات الشحن</h2>
+    <table id="depositsTable">
+      <thead>
+        <tr>
+          <th>المستخدم</th>
+          <th>المبلغ</th>
+          <th>TXID</th>
+          <th>الحالة</th>
+          <th>إجراء</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- طلبات السحب -->
+  <div class="section">
+    <h2>طلبات السحب</h2>
+    <table id="withdrawalsTable">
+      <thead>
+        <tr>
+          <th>المستخدم</th>
+          <th>المبلغ</th>
+          <th>المحفظة</th>
+          <th>الحالة</th>
+          <th>إجراء</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- المستخدمين -->
+  <div class="section">
+    <h2>المستخدمين</h2>
+    <table id="usersTable">
+      <thead>
+        <tr>
+          <th>الإيميل</th>
+          <th>الرصيد</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- السجل -->
+  <div class="section">
+    <h2>سجل العمليات</h2>
+    <table id="transactionsTable">
+      <thead>
+        <tr>
+          <th>المستخدم</th>
+          <th>النوع</th>
+          <th>المبلغ</th>
+          <th>التاريخ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <button class="logout" onclick="logout()">تسجيل الخروج</button>
+
 </div>
 
-<script src="supabase.js"></script>
 <script>
-/* 🔐 ضع إيميل الأدمن فقط */
+/* إعداد Supabase */
+const supabase = window.supabase.createClient(
+  "SUPABASE_URL",
+  "SUPABASE_ANON_KEY"
+);
+
 const ADMIN_EMAIL = "am.alsus1995@gmail.com";
 
+/* تحقق الأدمن */
 async function checkAdmin() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.email !== ADMIN_EMAIL) {
-    alert("غير مصرح لك بالدخول");
-    location.href = "dashboard.html";
-    return;
+    alert("🚫 دخول غير مصرح");
+    window.location.href = "login.html";
   }
-  document.getElementById("adminEmail").innerText = user.email;
+}
+checkAdmin();
+
+/* تسجيل خروج */
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
 }
 
-async function loadWithdrawals() {
-  const { data, error } = await supabase
-    .from("withdrawals")
+/* تحميل الشحن */
+async function loadDeposits() {
+  const { data } = await supabase
+    .from("deposits")
     .select("*")
-    .order("created_at", { ascending: false });
+    .eq("status", "pending");
 
-  if (error) {
-    alert("خطأ بتحميل البيانات");
-    return;
-  }
+  const tbody = document.querySelector("#depositsTable tbody");
+  tbody.innerHTML = "";
 
-  const list = document.getElementById("withdrawList");
-  list.innerHTML = "";
-
-  if (!data || data.length === 0) {
-    list.innerHTML = "<p>لا يوجد طلبات سحب</p>";
-    return;
-  }
-
-  data.forEach(w => {
-    list.innerHTML += `
-      <div class="card">
-        <p><strong>المستخدم:</strong> ${w.user_id}</p>
-        <p><strong>المبلغ:</strong> ${w.amount}</p>
-        <p><strong>المحفظة:</strong> ${w.wallet}</p>
-        <p>
-          <strong>الحالة:</strong>
-          <span class="status-${w.status}">${w.status}</span>
-        </p>
-
-        ${
-          w.status === "pending"
-          ? `
-            <div class="actions">
-              <button class="btn-gold" onclick="updateStatus('${w.id}','approved')">✔️ قبول</button>
-              <button class="btn-dark" onclick="updateStatus('${w.id}','rejected')">❌ رفض</button>
-            </div>
-          `
-          : ""
-        }
-      </div>
-    `;
+  data.forEach(d => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${d.user_id}</td>
+        <td>${d.amount}</td>
+        <td>${d.txid}</td>
+        <td>${d.status}</td>
+        <td>
+          <button class="approve" onclick="updateDeposit('${d.id}','approved')">✔</button>
+          <button class="reject" onclick="updateDeposit('${d.id}','rejected')">✖</button>
+        </td>
+      </tr>`;
   });
 }
 
-async function updateStatus(id, status) {
-  const confirmAction = confirm("هل أنت متأكد؟");
-  if (!confirmAction) return;
+async function updateDeposit(id, status) {
+  await supabase.from("deposits").update({ status }).eq("id", id);
+  loadDeposits();
+}
 
-  const { error } = await supabase
+/* تحميل السحب */
+async function loadWithdrawals() {
+  const { data } = await supabase
     .from("withdrawals")
-    .update({ status: status })
-    .eq("id", id);
+    .select("*")
+    .eq("status", "pending");
 
-  if (error) {
-    alert("حدث خطأ");
-  } else {
-    loadWithdrawals();
-  }
+  const tbody = document.querySelector("#withdrawalsTable tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(w => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${w.user_id}</td>
+        <td>${w.amount}</td>
+        <td>${w.wallet}</td>
+        <td>${w.status}</td>
+        <td>
+          <button class="approve" onclick="updateWithdrawal('${w.id}','approved')">✔</button>
+          <button class="reject" onclick="updateWithdrawal('${w.id}','rejected')">✖</button>
+        </td>
+      </tr>`;
+  });
 }
 
-async function logout() {
-  await supabase.auth.signOut();
-  location.href = "login.html";
+async function updateWithdrawal(id, status) {
+  await supabase.from("withdrawals").update({ status }).eq("id", id);
+  loadWithdrawals();
 }
 
-checkAdmin();
+/* المستخدمين */
+async function loadUsers() {
+  const { data } = await supabase.from("profiles").select("email,points");
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML = "";
+  data.forEach(u => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${u.email}</td>
+        <td>${u.points}</td>
+      </tr>`;
+  });
+}
+
+/* السجل */
+async function loadTransactions() {
+  const { data } = await supabase
+    .from("transactions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const tbody = document.querySelector("#transactionsTable tbody");
+  tbody.innerHTML = "";
+  data.forEach(t => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${t.user_id}</td>
+        <td>${t.type}</td>
+        <td>${t.amount}</td>
+        <td>${new Date(t.created_at).toLocaleString()}</td>
+      </tr>`;
+  });
+}
+
+/* تحميل الكل */
+loadDeposits();
 loadWithdrawals();
+loadUsers();
+loadTransactions();
 </script>
 
 </body>
