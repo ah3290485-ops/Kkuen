@@ -1,31 +1,32 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>لوحة التحكم | BTCUEN</title>
+  <title>لوحة تحكم الأدمن</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ستايل أساسي -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
-      background: linear-gradient(135deg, #020617, #020617);
+      background: #0b0f1a;
       color: #fff;
       font-family: Tahoma, Arial;
     }
-    h1 {
+    h1, h2 {
       color: gold;
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
     }
-    .section {
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 14px;
+    .card {
+      background: #12182a;
       padding: 20px;
-      margin-bottom: 25px;
+      border-radius: 16px;
+      margin-bottom: 30px;
     }
     table {
       width: 100%;
@@ -34,7 +35,7 @@
     }
     th, td {
       padding: 10px;
-      border-bottom: 1px solid #1e293b;
+      border-bottom: 1px solid #333;
       text-align: center;
     }
     th {
@@ -47,20 +48,15 @@
       cursor: pointer;
       font-size: 14px;
     }
-    .approve { background: #16a34a; color: #fff; }
-    .reject { background: #dc2626; color: #fff; }
-    .logout {
-      background: #334155;
+    .approve {
+      background: #16a34a;
       color: #fff;
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      border-radius: 14px;
+    }
+    .reject {
+      background: #dc2626;
+      color: #fff;
     }
   </style>
-
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -70,9 +66,9 @@
   <h1>لوحة تحكم الأدمن</h1>
 
   <!-- طلبات الشحن -->
-  <div class="section">
+  <div class="card">
     <h2>طلبات الشحن</h2>
-    <table id="depositsTable">
+    <table>
       <thead>
         <tr>
           <th>المستخدم</th>
@@ -82,14 +78,14 @@
           <th>إجراء</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="depositsTable"></tbody>
     </table>
   </div>
 
   <!-- طلبات السحب -->
-  <div class="section">
+  <div class="card">
     <h2>طلبات السحب</h2>
-    <table id="withdrawalsTable">
+    <table>
       <thead>
         <tr>
           <th>المستخدم</th>
@@ -99,168 +95,93 @@
           <th>إجراء</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="withdrawalsTable"></tbody>
     </table>
   </div>
-
-  <!-- المستخدمين -->
-  <div class="section">
-    <h2>المستخدمين</h2>
-    <table id="usersTable">
-      <thead>
-        <tr>
-          <th>الإيميل</th>
-          <th>الرصيد</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- السجل -->
-  <div class="section">
-    <h2>سجل العمليات</h2>
-    <table id="transactionsTable">
-      <thead>
-        <tr>
-          <th>المستخدم</th>
-          <th>النوع</th>
-          <th>المبلغ</th>
-          <th>التاريخ</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <button class="logout" onclick="logout()">تسجيل الخروج</button>
 
 </div>
 
 <script>
-/* إعداد Supabase */
-const supabase = window.supabase.createClient(
-  "SUPABASE_URL",
-  "SUPABASE_ANON_KEY"
-);
+  const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
 
-const ADMIN_EMAIL = "am.alsus1995@gmail.com";
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
-/* تحقق الأدمن */
-async function checkAdmin() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.email !== ADMIN_EMAIL) {
-    alert("🚫 دخول غير مصرح");
-    window.location.href = "login.html";
+  // جلب طلبات الشحن
+  async function loadDeposits() {
+    const { data, error } = await supabase
+      .from("deposits")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    const table = document.getElementById("depositsTable");
+    table.innerHTML = "";
+
+    if (data) {
+      data.forEach(d => {
+        table.innerHTML += `
+          <tr>
+            <td>${d.user_id}</td>
+            <td>${d.amount}</td>
+            <td>${d.txid || "-"}</td>
+            <td>${d.status}</td>
+            <td>
+              <button class="approve" onclick="updateDeposit('${d.id}','approved')">✔</button>
+              <button class="reject" onclick="updateDeposit('${d.id}','rejected')">✖</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
   }
-}
-checkAdmin();
 
-/* تسجيل خروج */
-async function logout() {
-  await supabase.auth.signOut();
-  window.location.href = "login.html";
-}
+  async function updateDeposit(id, status) {
+    await supabase.from("deposits")
+      .update({ status })
+      .eq("id", id);
+    loadDeposits();
+  }
 
-/* تحميل الشحن */
-async function loadDeposits() {
-  const { data } = await supabase
-    .from("deposits")
-    .select("*")
-    .eq("status", "pending");
+  // جلب طلبات السحب
+  async function loadWithdrawals() {
+    const { data, error } = await supabase
+      .from("withdrawals")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  const tbody = document.querySelector("#depositsTable tbody");
-  tbody.innerHTML = "";
+    const table = document.getElementById("withdrawalsTable");
+    table.innerHTML = "";
 
-  data.forEach(d => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${d.user_id}</td>
-        <td>${d.amount}</td>
-        <td>${d.txid}</td>
-        <td>${d.status}</td>
-        <td>
-          <button class="approve" onclick="updateDeposit('${d.id}','approved')">✔</button>
-          <button class="reject" onclick="updateDeposit('${d.id}','rejected')">✖</button>
-        </td>
-      </tr>`;
-  });
-}
+    if (data) {
+      data.forEach(w => {
+        table.innerHTML += `
+          <tr>
+            <td>${w.user_id}</td>
+            <td>${w.amount}</td>
+            <td>${w.wallet}</td>
+            <td>${w.status}</td>
+            <td>
+              <button class="approve" onclick="updateWithdrawal('${w.id}','approved')">✔</button>
+              <button class="reject" onclick="updateWithdrawal('${w.id}','rejected')">✖</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+  }
 
-async function updateDeposit(id, status) {
-  await supabase.from("deposits").update({ status }).eq("id", id);
+  async function updateWithdrawal(id, status) {
+    await supabase.from("withdrawals")
+      .update({ status })
+      .eq("id", id);
+    loadWithdrawals();
+  }
+
   loadDeposits();
-}
-
-/* تحميل السحب */
-async function loadWithdrawals() {
-  const { data } = await supabase
-    .from("withdrawals")
-    .select("*")
-    .eq("status", "pending");
-
-  const tbody = document.querySelector("#withdrawalsTable tbody");
-  tbody.innerHTML = "";
-
-  data.forEach(w => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${w.user_id}</td>
-        <td>${w.amount}</td>
-        <td>${w.wallet}</td>
-        <td>${w.status}</td>
-        <td>
-          <button class="approve" onclick="updateWithdrawal('${w.id}','approved')">✔</button>
-          <button class="reject" onclick="updateWithdrawal('${w.id}','rejected')">✖</button>
-        </td>
-      </tr>`;
-  });
-}
-
-async function updateWithdrawal(id, status) {
-  await supabase.from("withdrawals").update({ status }).eq("id", id);
   loadWithdrawals();
-}
-
-/* المستخدمين */
-async function loadUsers() {
-  const { data } = await supabase.from("profiles").select("email,points");
-  const tbody = document.querySelector("#usersTable tbody");
-  tbody.innerHTML = "";
-  data.forEach(u => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${u.email}</td>
-        <td>${u.points}</td>
-      </tr>`;
-  });
-}
-
-/* السجل */
-async function loadTransactions() {
-  const { data } = await supabase
-    .from("transactions")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const tbody = document.querySelector("#transactionsTable tbody");
-  tbody.innerHTML = "";
-  data.forEach(t => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${t.user_id}</td>
-        <td>${t.type}</td>
-        <td>${t.amount}</td>
-        <td>${new Date(t.created_at).toLocaleString()}</td>
-      </tr>`;
-  });
-}
-
-/* تحميل الكل */
-loadDeposits();
-loadWithdrawals();
-loadUsers();
-loadTransactions();
 </script>
 
 </body>
