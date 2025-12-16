@@ -2,167 +2,116 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>لوحة تحكم الأدمن</title>
+  <title>تسجيل الدخول</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="mobile.css">
-
+  <!-- Supabase v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
 
   <style>
     body {
-      background: #0b0f1a;
+      background: linear-gradient(135deg, #050814, #0b1226);
+      font-family: Arial, sans-serif;
       color: #fff;
-      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-    h1,h2 {
-      color: gold;
+    .box {
+      width: 90%;
+      max-width: 400px;
+      background: #0d132b;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(255,215,0,0.2);
+    }
+    h2 {
       text-align: center;
+      color: gold;
+      margin-bottom: 20px;
     }
-    table {
+    input {
       width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 30px;
-    }
-    th, td {
-      border: 1px solid #333;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background: #111;
-      color: gold;
+      padding: 14px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
     }
     button {
-      padding: 6px 12px;
-      border-radius: 8px;
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      background: gold;
+      color: #000;
       border: none;
+      border-radius: 14px;
       cursor: pointer;
+      font-weight: bold;
     }
-    .approve {
-      background: green;
-      color: #fff;
+    button:hover {
+      background: #ffd700;
     }
-    .reject {
-      background: red;
-      color: #fff;
+    .note {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .note a {
+      color: gold;
+      text-decoration: none;
     }
   </style>
 </head>
 
 <body>
 
-<h1>لوحة تحكم الأدمن</h1>
+<div class="box">
+  <h2>تسجيل الدخول</h2>
 
-<!-- حماية الأدمن -->
+  <input type="email" id="email" placeholder="الإيميل">
+  <input type="password" id="password" placeholder="كلمة المرور">
+
+  <button onclick="login()">دخول</button>
+
+  <div class="note">
+    ما عندك حساب؟ <a href="register.html">إنشاء حساب</a>
+  </div>
+</div>
+
 <script>
-supabase.auth.getUser().then(({ data }) => {
-  if (!data.user || data.user.email !== "am.alsus1995@gmail.com") {
-    alert("دخول مرفوض");
-    window.location.href = "login.html";
+  const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      alert("رجاءً أدخل الإيميل وكلمة المرور");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      alert("فشل تسجيل الدخول: " + error.message);
+      return;
+    }
+
+    // نجاح
+    window.location.href = "dashboard.html";
   }
-});
-</script>
-
-<!-- طلبات الشحن -->
-<h2>طلبات الشحن</h2>
-<table>
-  <thead>
-    <tr>
-      <th>المستخدم</th>
-      <th>المبلغ</th>
-      <th>TXID</th>
-      <th>الحالة</th>
-      <th>إجراء</th>
-    </tr>
-  </thead>
-  <tbody id="deposits"></tbody>
-</table>
-
-<!-- طلبات السحب -->
-<h2>طلبات السحب</h2>
-<table>
-  <thead>
-    <tr>
-      <th>المستخدم</th>
-      <th>المبلغ</th>
-      <th>المحفظة</th>
-      <th>الحالة</th>
-      <th>إجراء</th>
-    </tr>
-  </thead>
-  <tbody id="withdrawals"></tbody>
-</table>
-
-<script>
-// جلب طلبات الشحن
-async function loadDeposits() {
-  const { data } = await supabase
-    .from("deposits")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const box = document.getElementById("deposits");
-  box.innerHTML = "";
-
-  data.forEach(d => {
-    box.innerHTML += `
-      <tr>
-        <td>${d.user_id}</td>
-        <td>${d.amount}</td>
-        <td>${d.txid || "-"}</td>
-        <td>${d.status}</td>
-        <td>
-          <button class="approve" onclick="updateDeposit('${d.id}','approved')">موافقة</button>
-          <button class="reject" onclick="updateDeposit('${d.id}','rejected')">رفض</button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-// جلب طلبات السحب
-async function loadWithdrawals() {
-  const { data } = await supabase
-    .from("withdrawals")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const box = document.getElementById("withdrawals");
-  box.innerHTML = "";
-
-  data.forEach(w => {
-    box.innerHTML += `
-      <tr>
-        <td>${w.user_id}</td>
-        <td>${w.amount}</td>
-        <td>${w.wallet}</td>
-        <td>${w.status}</td>
-        <td>
-          <button class="approve" onclick="updateWithdrawal('${w.id}','approved')">موافقة</button>
-          <button class="reject" onclick="updateWithdrawal('${w.id}','rejected')">رفض</button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-// تحديث حالة الشحن
-async function updateDeposit(id, status) {
-  await supabase.from("deposits").update({ status }).eq("id", id);
-  loadDeposits();
-}
-
-// تحديث حالة السحب
-async function updateWithdrawal(id, status) {
-  await supabase.from("withdrawals").update({ status }).eq("id", id);
-  loadWithdrawals();
-}
-
-loadDeposits();
-loadWithdrawals();
 </script>
 
 </body>
