@@ -10,18 +10,18 @@
 
   <style>
     body {
-      margin: 0;
-      height: 100vh;
+      background: linear-gradient(135deg, #050814, #0b1226);
+      font-family: Arial, sans-serif;
+      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg,#050814,#0b1226);
-      font-family: Arial, sans-serif;
-      color: #fff;
+      height: 100vh;
+      margin: 0;
     }
     .box {
       width: 90%;
-      max-width: 380px;
+      max-width: 400px;
       background: #0d132b;
       padding: 25px;
       border-radius: 16px;
@@ -31,7 +31,7 @@
       color: gold;
       margin-bottom: 20px;
     }
-    input, button {
+    input {
       width: 100%;
       padding: 14px;
       margin-bottom: 15px;
@@ -39,13 +39,25 @@
       border: none;
       font-size: 16px;
     }
-    input {
-      background: #eaf0ff;
-    }
     button {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
       background: gold;
+      color: #000;
+      border: none;
+      border-radius: 14px;
       font-weight: bold;
       cursor: pointer;
+    }
+    .note {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .note a {
+      color: gold;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -59,24 +71,24 @@
   <input type="password" id="password" placeholder="كلمة المرور">
 
   <button onclick="login()">دخول</button>
+
+  <div class="note">
+    ما عندك حساب؟ <a href="/Kkuen/register.html">إنشاء حساب</a>
+  </div>
 </div>
 
 <script>
   const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
 
-  const supabase = supabaseJs.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   async function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
     if (!email || !password) {
-      alert("دخل الإيميل وكلمة المرور");
+      alert("أدخل الإيميل وكلمة المرور");
       return;
     }
 
@@ -90,8 +102,8 @@
       return;
     }
 
-    // تحويل مباشر بعد النجاح
-    window.location.replace("dashboard.html");
+    // ✅ تحويل مضمون
+    window.location.href = "/Kkuen/dashboard.html";
   }
 </script>
 
