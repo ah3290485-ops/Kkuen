@@ -1,33 +1,70 @@
+
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
 <meta charset="UTF-8">
+<title>تسجيل الدخول</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BTCUEN</title>
 
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="mobile.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<style>
+body {
+  background:#0b0f1a;
+  color:#fff;
+  font-family:Arial;
+}
+input, button {
+  width:90%;
+  padding:15px;
+  margin:10px;
+  font-size:16px;
+}
+button {
+  background:gold;
+  border:none;
+  border-radius:10px;
+}
+</style>
 </head>
+
 <body>
 
-<div class="home">
+<h2>تسجيل الدخول</h2>
 
-  <h1 class="logo">BTCUEN</h1>
-  <p class="subtitle">منصة استثمار وربح من الإعلانات</p>
+<input type="email" id="email" placeholder="الإيميل">
+<input type="password" id="password" placeholder="كلمة المرور">
 
-  <div class="buttons">
-    <a href="login.html" class="btn primary">تسجيل الدخول</a>
-    <a href="register.html" class="btn secondary">إنشاء حساب</a>
-  </div>
+<button id="loginBtn">دخول</button>
 
-  <div class="features">
-    <p>✔ أرباح يومية</p>
-    <p>✔ سحب يدوي آمن</p>
-    <p>✔ دعم مباشر</p>
-  </div>
+<script>
+const supabaseClient = supabase.createClient(
+  "https://gpfxakuneeuafxgqbobs.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ"
+);
 
-</div>
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("أدخل الإيميل وكلمة المرور");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  window.location.href = "/Kkuen/dashboard.html";
+});
+</script>
 
 </body>
 </html>
