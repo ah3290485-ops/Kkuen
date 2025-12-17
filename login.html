@@ -15,23 +15,23 @@
 
 <body>
 
-  <div class="box">
-    <h2>تسجيل الدخول</h2>
+<div class="box">
+  <h2>تسجيل الدخول</h2>
 
-    <input type="email" id="email" placeholder="الإيميل">
-    <input type="password" id="password" placeholder="كلمة المرور">
+  <input type="email" id="email" placeholder="الإيميل">
+  <input type="password" id="password" placeholder="كلمة المرور">
 
-    <button onclick="login()">دخول</button>
+  <button onclick="login()">دخول</button>
 
-    <div class="note">
-      ما عندك حساب؟ <a href="/Kkuen/register.html">إنشاء حساب</a>
-    </div>
+  <div class="note">
+    <a href="/Kkuen/register.html">ما عندك حساب؟ إنشاء حساب</a>
   </div>
+</div>
 
 <script>
-  // 🔑 بيانات Supabase
+  // ⚠️ حط القيم الحقيقية تبعك
   const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-  const SUPABASE_ANON_KEY = "PUT_YOUR_ANON_KEY_HERE";
+  const SUPABASE_ANON_KEY = "⬅️ هون حط anon key الحقيقي";
 
   const supabase = supabase.createClient(
     SUPABASE_URL,
@@ -47,17 +47,17 @@
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password
     });
 
     if (error) {
-      alert("فشل تسجيل الدخول: " + error.message);
+      alert("خطأ: " + error.message);
       return;
     }
 
-    // ✅ التحويل الصحيح (المهم)
+    // ✅ نجاح تسجيل الدخول
     window.location.href = "/Kkuen/dashboard.html";
   }
 </script>
