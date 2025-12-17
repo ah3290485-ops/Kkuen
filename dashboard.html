@@ -2,71 +2,86 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>لوحة التحكم</title>
+  <title>الرئيسية</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
 
-  <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    body{
+      margin:0;
+      font-family:Arial;
+      background:linear-gradient(135deg,#050814,#0b1226);
+      color:#fff;
+      padding:20px;
+    }
+    h1{
+      color:gold;
+    }
+    .card{
+      background:#0d132b;
+      padding:20px;
+      border-radius:16px;
+      margin-bottom:20px;
+    }
+    .btn{
+      display:block;
+      width:100%;
+      padding:15px;
+      margin-bottom:12px;
+      border-radius:14px;
+      background:gold;
+      color:#000;
+      font-size:18px;
+      border:none;
+      font-weight:bold;
+    }
+    .logout{
+      background:#222;
+      color:#fff;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>BTCUENE</h1>
-  <div id="userEmail" style="opacity:.7;margin-bottom:10px"></div>
+<h1>BTCUENE</h1>
 
-  <div class="card">
-    <div>💰 رصيدك الحالي</div>
-    <div class="balance" id="points">0</div>
-  </div>
-
-  <button class="btn-gold" onclick="location.href='ads.html'">🎬 مشاهدة إعلان</button>
-  <button class="btn-gold" onclick="location.href='deposit.html'">➕ شحن الرصيد</button>
-  <button class="btn-gold" onclick="location.href='withdraw.html'">💸 طلب سحب</button>
-
-  <button class="btn-dark" onclick="logout()">🚪 تسجيل الخروج</button>
+<div class="card">
+  💰 رصيدك الحالي: <strong id="balance">0</strong>
 </div>
 
-<div class="menu">
-  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="ads.html"><span>🎬</span>إعلانات</a>
-  <a href="wallet.html"><span>💼</span>محفظتي</a>
-  <a href="transactions.html"><span>📜</span>السجل</a>
-  <a href="account.html"><span>👤</span>حسابي</a>
-</div>
+<button class="btn">🎬 مشاهدة إعلان</button>
+<button class="btn">➕ شحن الرصيد</button>
+<button class="btn">💸 طلب سحب</button>
+<button class="btn logout" onclick="logout()">🚪 تسجيل الخروج</button>
 
-<script src="supabase.js"></script>
 <script>
-async function loadDashboard() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    location.href = "login.html";
-    return;
+  const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
+  const SUPABASE_ANON_KEY = "PUT_YOUR_ANON_KEY_HERE";
+
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.replace("/Kkuen/login.html");
+    }
   }
 
-  document.getElementById("userEmail").innerText = user.email;
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("points")
-    .eq("id", user.id)
-    .single();
-
-  if (data) {
-    document.getElementById("points").innerText = data.points;
+  async function logout() {
+    await supabase.auth.signOut();
+    window.location.replace("/Kkuen/login.html");
   }
-}
 
-async function logout() {
-  await supabase.auth.signOut();
-  location.href = "login.html";
-}
-
-loadDashboard();
+  checkAuth();
 </script>
 
 </body>
