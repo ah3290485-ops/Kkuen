@@ -2,67 +2,78 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>الرئيسية</title>
+  <title>لوحة التحكم</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(135deg,#050814,#0b1226);
+      background: linear-gradient(135deg, #050814, #0b1226);
       font-family: Arial, sans-serif;
       color: #fff;
+      margin: 0;
       padding: 20px;
     }
     h1 {
       color: gold;
+      text-align: center;
       margin-bottom: 20px;
+    }
+    .card {
+      background: #0d132b;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 20px;
     }
     button {
       width: 100%;
-      padding: 15px;
-      margin-top: 15px;
+      padding: 16px;
+      margin-top: 10px;
+      font-size: 18px;
       border-radius: 14px;
       border: none;
-      background: gold;
-      font-weight: bold;
       cursor: pointer;
+      font-weight: bold;
     }
+    .gold { background: gold; color: #000; }
+    .dark { background: #1a1f3a; color: #fff; }
   </style>
 </head>
 
 <body>
 
 <h1>BTCUENE</h1>
-<p>أهلاً فيك باللوحة الرئيسية 👋</p>
 
-<button onclick="logout()">تسجيل الخروج</button>
+<div class="card">
+  💰 رصيدك الحالي<br>
+  <strong id="balance">0</strong>
+</div>
+
+<button class="gold">🎬 مشاهدة إعلان</button>
+<button class="gold">➕ شحن الرصيد</button>
+<button class="gold">💸 طلب سحب</button>
+<button class="dark" onclick="logout()">🚪 تسجيل الخروج</button>
 
 <script>
   const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
 
-  const supabase = supabaseJs.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function checkLogin() {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
-      window.location.replace("login.html");
+  // 🔐 حماية الصفحة
+  supabase.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = "/Kkuen/login.html";
     }
-  }
+  });
 
   async function logout() {
     await supabase.auth.signOut();
-    window.location.replace("login.html");
+    window.location.href = "/Kkuen/login.html";
   }
-
-  checkLogin();
 </script>
 
 </body>
