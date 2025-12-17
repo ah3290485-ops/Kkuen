@@ -5,80 +5,112 @@
   <title>شحن الرصيد</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="mobile.css">
-
   <!-- Supabase -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{
+      background: linear-gradient(135deg,#050814,#0b1226);
+      font-family: Arial, sans-serif;
+      color:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      margin:0;
+    }
+    .box{
+      width:90%;
+      max-width:400px;
+      background:#0d132b;
+      padding:25px;
+      border-radius:16px;
+      box-shadow:0 0 20px rgba(255,215,0,.25);
+    }
+    h2{color:gold;text-align:center;margin-bottom:20px;}
+    input{
+      width:100%;
+      padding:14px;
+      margin-bottom:15px;
+      border-radius:12px;
+      border:none;
+      font-size:16px;
+    }
+    button{
+      width:100%;
+      padding:14px;
+      background:gold;
+      color:#000;
+      font-weight:bold;
+      border:none;
+      border-radius:14px;
+      font-size:18px;
+      cursor:pointer;
+    }
+    .back{
+      margin-top:12px;
+      text-align:center;
+      font-size:14px;
+    }
+    .back a{color:gold;text-decoration:none;}
+  </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h1>➕ شحن الرصيد</h1>
+<div class="box">
+  <h2>طلب شحن</h2>
 
-  <div class="card">
-    <p>حوّل المبلغ على العنوان التالي:</p>
+  <input type="number" id="amount" placeholder="المبلغ بالدولار">
+  <input type="text" id="txid" placeholder="TXID (رقم التحويل)">
 
-    <!-- عنوان محفظتك -->
-    <div class="address">
-      USDT (TRC20): TPNoGerv1EMBSdrs9Yca93eCQUVsoNiRvq
-    </div>
+  <button onclick="sendDeposit()">إرسال الطلب</button>
 
-    <input type="number" id="amount" placeholder="المبلغ" min="1">
-    <input type="text" id="txid" placeholder="TXID / رقم التحويل">
-
-    <button class="btn-gold" onclick="submitDeposit()">إرسال طلب الشحن</button>
+  <div class="back">
+    <a href="dashboard.html">رجوع للوحة التحكم</a>
   </div>
-
-  <div class="note">
-    ⏳ يتم مراجعة طلب الشحن يدوياً وإضافة الرصيد بعد التأكيد
-  </div>
-
-  <button class="btn-dark" onclick="location.href='dashboard.html'">⬅️ رجوع</button>
 </div>
 
-<div class="menu">
-  <a href="dashboard.html"><span>🏠</span>الرئيسية</a>
-  <a href="wallet.html"><span>💼</span>محفظتي</a>
-  <a href="transactions.html"><span>📜</span>السجل</a>
-  <a href="account.html"><span>👤</span>حسابي</a>
-</div>
-
-<script src="supabase.js"></script>
 <script>
-async function submitDeposit() {
-  const amount = document.getElementById("amount").value;
-  const txid = document.getElementById("txid").value;
+  const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
+  const SUPABASE_ANON_KEY = "PUT_YOUR_ANON_KEY_HERE";
 
-  if (!amount || !txid) {
-    alert("يرجى تعبئة جميع الحقول");
-    return;
+  const supabase = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  async function sendDeposit(){
+    const amount = document.getElementById("amount").value;
+    const txid = document.getElementById("txid").value;
+
+    if(!amount || !txid){
+      alert("يرجى تعبئة جميع الحقول");
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if(!user){
+      window.location.href = "login.html";
+      return;
+    }
+
+    const { error } = await supabase
+      .from("deposits")
+      .insert([{
+        user_id: user.id,
+        amount: amount,
+        txid: txid,
+        status: "pending"
+      }]);
+
+    if(error){
+      alert("خطأ: " + error.message);
+    }else{
+      alert("تم إرسال طلب الشحن ✔️");
+      window.location.href = "dashboard.html";
+    }
   }
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    alert("الرجاء تسجيل الدخول");
-    return;
-  }
-
-  const { error } = await supabase
-    .from("deposits")
-    .insert([{
-      user_id: user.id,
-      amount: amount,
-      txid: txid,
-      status: "pending"
-    }]);
-
-  if (error) {
-    alert("❌ حدث خطأ أثناء إرسال الطلب");
-  } else {
-    alert("✅ تم إرسال طلب الشحن بنجاح");
-    location.href = "dashboard.html";
-  }
-}
 </script>
 
 </body>
