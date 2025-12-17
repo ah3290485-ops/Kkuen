@@ -1,10 +1,107 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{
+      margin:0; min-height:100vh;
+      font-family: Arial, sans-serif; color:#fff;
+      background: linear-gradient(135deg,#050814,#0b1226);
+      padding:18px;
+    }
+    .card{
+      background: rgba(13,27,43,0.85);
+      border-radius:18px;
+      padding:18px;
+      box-shadow: 0 0 22px rgba(255,215,0,0.12);
+      max-width:520px;
+      margin:0 auto;
+    }
+    h1{margin:0 0 10px; color:gold; font-size:28px;}
+    .row{margin:10px 0; opacity:.95;}
+    .btn{
+      width:100%;
+      padding:14px;
+      margin-top:10px;
+      border:none; border-radius:14px;
+      font-size:18px; font-weight:bold;
+      background:gold; color:#000;
+      cursor:pointer;
+    }
+    .btn2{
+      width:100%;
+      padding:14px;
+      margin-top:10px;
+      border:none; border-radius:14px;
+      font-size:18px; font-weight:bold;
+      background:#1f2b44; color:#fff;
+      cursor:pointer;
+    }
+    .small{font-size:13px; opacity:.85;}
+  </style>
 </head>
+
 <body>
-<h1>أهلًا، تم تسجيل الدخول بنجاح ✅</h1>
+  <div class="card">
+    <h1>الرئيسية</h1>
+
+    <div class="row">✅ أهلًا <span id="userEmail">...</span></div>
+    <div class="row small">إذا أنت مو مسجّل دخول، رح يتم تحويلك تلقائيًا لصفحة الدخول.</div>
+
+    <button class="btn" onclick="goAds()">مشاهدة إعلان</button>
+    <button class="btn" onclick="goCharge()">شحن الرصيد</button>
+    <button class="btn" onclick="goWithdraw()">طلب سحب</button>
+
+    <div id="adminBox" style="display:none;">
+      <button class="btn2" onclick="goAdmin()">لوحة الأدمن</button>
+    </div>
+
+    <button class="btn2" onclick="logout()">تسجيل الخروج</button>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
+
+    const ADMIN_EMAIL = "am.alsus1995@gmail.com"; // ✅ الأدمن إيميل واحد فقط
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function protectAndLoad() {
+      const { data, error } = await supabase.auth.getSession();
+
+      // ✅ إذا ما في جلسة -> رجّعه للوجين
+      if (error || !data?.session) {
+        window.location.href = "./login.html";
+        return;
+      }
+
+      const email = data.session.user.email || "";
+      document.getElementById("userEmail").textContent = email;
+
+      // ✅ إظهار زر الأدمن لإيميل واحد فقط
+      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+        document.getElementById("adminBox").style.display = "block";
+      }
+    }
+
+    protectAndLoad();
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "./login.html";
+    }
+
+    function goAds(){ window.location.href = "./ads.html"; }
+    function goCharge(){ window.location.href = "./charge.html"; }
+    function goWithdraw(){ window.location.href = "./withdraw.html"; }
+    function goAdmin(){ window.location.href = "./admin.html"; }
+  </script>
 </body>
 </html>
