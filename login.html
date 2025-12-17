@@ -3,63 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <title>تسجيل الدخول</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    body {
-      background: linear-gradient(135deg, #050814, #0b1226);
-      font-family: Arial, sans-serif;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .box {
-      width: 90%;
-      max-width: 400px;
-      background: #0d132b;
-      padding: 25px;
-      border-radius: 16px;
-    }
-    h2 {
-      text-align: center;
-      color: gold;
-      margin-bottom: 20px;
-    }
-    input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 15px;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      font-size: 18px;
-      background: gold;
-      color: #000;
-      border: none;
-      border-radius: 14px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .note {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    .note a {
-      color: gold;
-      text-decoration: none;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="mobile.css">
 </head>
 
 <body>
@@ -73,7 +23,7 @@
   <button onclick="login()">دخول</button>
 
   <div class="note">
-    ما عندك حساب؟ <a href="/Kkuen/register.html">إنشاء حساب</a>
+    <a href="register.html">ما عندك حساب؟ إنشاء حساب</a>
   </div>
 </div>
 
@@ -81,7 +31,10 @@
   const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
   async function login() {
     const email = document.getElementById("email").value;
@@ -92,7 +45,7 @@
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
@@ -102,8 +55,8 @@
       return;
     }
 
-    // ✅ تحويل مضمون
-    window.location.href = "/Kkuen/dashboard.html";
+    // ✅ نجاح → روح عالداشبورد
+    window.location.href = "dashboard.html";
   }
 </script>
 
