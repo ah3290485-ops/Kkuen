@@ -11,6 +11,59 @@
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg,#050814,#0b1226);
+      color:#fff;
+      font-family: Arial;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      margin:0;
+    }
+    .box{
+      width:90%;
+      max-width:400px;
+      background:#0d132b;
+      padding:25px;
+      border-radius:16px;
+    }
+    h2{
+      text-align:center;
+      color:gold;
+      margin-bottom:20px;
+    }
+    input{
+      width:100%;
+      padding:14px;
+      margin-bottom:15px;
+      border-radius:12px;
+      border:none;
+      font-size:16px;
+    }
+    button{
+      width:100%;
+      padding:14px;
+      background:gold;
+      color:#000;
+      font-size:18px;
+      border:none;
+      border-radius:14px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    .note{
+      margin-top:15px;
+      text-align:center;
+      font-size:14px;
+    }
+    .note a{
+      color:gold;
+      text-decoration:none;
+    }
+  </style>
 </head>
 
 <body>
@@ -24,43 +77,41 @@
   <button onclick="login()">دخول</button>
 
   <div class="note">
-    <a href="/Kkuen/register.html">ما عندك حساب؟ إنشاء حساب</a>
+    ما عندك حساب؟ <a href="/Kkuen/register.html">إنشاء حساب</a>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-const SUPABASE_ANON_KEY = "PUT_YOUR_ANON_KEY_HERE";
+  const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
+  const SUPABASE_ANON_KEY = "PUT_YOUR_ANON_KEY_HERE";
 
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
+  const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
 
-async function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  async function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-  if (!email || !password) {
-    alert("دخل الإيميل وكلمة المرور");
-    return;
+    if (!email || !password) {
+      alert("دخل الإيميل وكلمة المرور");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      alert("خطأ: " + error.message);
+      return;
+    }
+
+    // ✅ تحويل صحيح
+    window.location.replace("/Kkuen/dashboard.html");
   }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    alert("فشل تسجيل الدخول: " + error.message);
-    return;
-  }
-
-  // ✅ تحويل مباشر
-  window.location.href = "dashboard.html";
-}
 </script>
 
 </body>
