@@ -1,107 +1,95 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard</title>
-
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <title>لوحة التحكم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body{
-      margin:0; min-height:100vh;
-      font-family: Arial, sans-serif; color:#fff;
-      background: linear-gradient(135deg,#050814,#0b1226);
-      padding:18px;
+    body {
+      margin: 0;
+      font-family: Arial, Tahoma;
+      background: linear-gradient(180deg, #0b0f1a, #020617);
+      color: white;
+      text-align: center;
     }
-    .card{
-      background: rgba(13,27,43,0.85);
-      border-radius:18px;
-      padding:18px;
-      box-shadow: 0 0 22px rgba(255,215,0,0.12);
-      max-width:520px;
-      margin:0 auto;
+
+    header {
+      padding: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: gold;
     }
-    h1{margin:0 0 10px; color:gold; font-size:28px;}
-    .row{margin:10px 0; opacity:.95;}
-    .btn{
-      width:100%;
-      padding:14px;
-      margin-top:10px;
-      border:none; border-radius:14px;
-      font-size:18px; font-weight:bold;
-      background:gold; color:#000;
-      cursor:pointer;
+
+    .box {
+      background: #0f172a;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(255,215,0,0.15);
     }
-    .btn2{
-      width:100%;
-      padding:14px;
-      margin-top:10px;
-      border:none; border-radius:14px;
-      font-size:18px; font-weight:bold;
-      background:#1f2b44; color:#fff;
-      cursor:pointer;
+
+    .balance {
+      font-size: 28px;
+      margin: 10px 0;
+      color: #22c55e;
     }
-    .small{font-size:13px; opacity:.85;}
+
+    button {
+      width: 90%;
+      padding: 15px;
+      margin: 10px 0;
+      font-size: 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .watch { background: gold; color: black; }
+    .charge { background: #38bdf8; color: black; }
+    .withdraw { background: #22c55e; color: black; }
+    .logout { background: #ef4444; color: white; }
+
   </style>
 </head>
 
 <body>
-  <div class="card">
-    <h1>الرئيسية</h1>
 
-    <div class="row">✅ أهلًا <span id="userEmail">...</span></div>
-    <div class="row small">اهلا بكم في صفحة علي شان المطوره ل.</div>
+<header>BTCUENE</header>
 
-    <button class="btn" onclick="goAds()">مشاهدة إعلان</button>
-    <button class="btn" onclick="goCharge()">شحن الرصيد</button>
-    <button class="btn" onclick="goWithdraw()">طلب سحب</button>
+<div class="box">
+  <div>رصيدك الحالي</div>
+  <div class="balance" id="balance">0 $</div>
+</div>
 
-    <div id="adminBox" style="display:none;">
-      <button class="btn2" onclick="goAdmin()">لوحة الأدمن</button>
-    </div>
+<div class="box">
+  <button class="watch">🎬 مشاهدة إعلان</button>
+  <button class="charge" onclick="location.href='charge.html'">➕ شحن الرصيد</button>
+  <button class="withdraw" onclick="location.href='withdraw.html'">💸 طلب سحب</button>
+</div>
 
-    <button class="btn2" onclick="logout()">تسجيل الخروج</button>
-  </div>
+<div class="box">
+  <button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>
+</div>
 
-  <script>
-    const SUPABASE_URL = "https://gpfxakuneeuafxgqbobs.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwZnhha3VuZWV1YWZ4Z3Fib2JzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MzE3ODEsImV4cCI6MjA4MTMwNzc4MX0.x2Mh3LwIg-8peEpJlif_1RcbrA-CyGa-xjtESaYKcXQ";
+<script src="supabase.js"></script>
+<script>
+async function checkLogin() {
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const ADMIN_EMAIL = "am.alsus1995@gmail.com"; // ✅ الأدمن إيميل واحد فقط
+  if (!user) {
+    window.location.href = "login.html";
+  }
+}
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
+}
 
-    async function protectAndLoad() {
-      const { data, error } = await supabase.auth.getSession();
+checkLogin();
+</script>
 
-      // ✅ إذا ما في جلسة -> رجّعه للوجين
-      if (error || !data?.session) {
-        window.location.href = "./login.html";
-        return;
-      }
-
-      const email = data.session.user.email || "";
-      document.getElementById("userEmail").textContent = email;
-
-      // ✅ إظهار زر الأدمن لإيميل واحد فقط
-      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-        document.getElementById("adminBox").style.display = "block";
-      }
-    }
-
-    protectAndLoad();
-
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "./login.html";
-    }
-
-    function goAds(){ window.location.href = "./ads.html"; }
-    function goCharge(){ window.location.href = "./charge.html"; }
-    function goWithdraw(){ window.location.href = "./withdraw.html"; }
-    function goAdmin(){ window.location.href = "./admin.html"; }
-  </script>
 </body>
 </html>
